@@ -18,21 +18,18 @@ const VOID_HEIGHT := 72.0
 const DIFFICULTY_PRESETS := {
 	"easy": {
 		"base_rise_interval": 5.2,
-		"min_rise_interval": 2.2,
 		"pressure_step_seconds": 12.0,
 		"jam_fail_seconds": 12.0,
 		"jam_fail_seconds_min": 6.0,
 	},
 	"normal": {
 		"base_rise_interval": 4.4,
-		"min_rise_interval": 1.7,
 		"pressure_step_seconds": 10.0,
 		"jam_fail_seconds": 10.0,
 		"jam_fail_seconds_min": 5.0,
 	},
 	"hard": {
 		"base_rise_interval": 3.6,
-		"min_rise_interval": 1.2,
 		"pressure_step_seconds": 8.0,
 		"jam_fail_seconds": 8.0,
 		"jam_fail_seconds_min": 4.0,
@@ -57,7 +54,6 @@ var field_pressure := 1
 var elapsed := 0.0
 var difficulty_id := "normal"
 var base_rise_interval := 4.4
-var min_rise_interval := 1.7
 var pressure_step_seconds := 10.0
 var jam_fail_seconds := 10.0
 var jam_fail_seconds_min := 5.0
@@ -111,8 +107,7 @@ func step(delta: float, player_column: int, player_near_void: bool) -> void:
 	rise_timer -= delta
 	if rise_timer <= 0.0:
 		_push_rising_row()
-		var interval_scale := minf(0.22 * float(field_pressure - 1), 2.2)
-		rise_timer = maxf(min_rise_interval, base_rise_interval - interval_scale)
+		rise_timer = maxf(1.0, base_rise_interval - 0.22 * float(field_pressure - 1))
 	for event in collapse_events:
 		event["timer"] = float(event["timer"]) - delta
 	var resolved: Array = []
@@ -545,7 +540,7 @@ func _jam_offset(col: int, row: int) -> float:
 	return sin(elapsed * freq + float(col) * 1.7 + float(row) * 0.3) * amp
 
 func _current_jam_fail_seconds() -> float:
-	return maxf(jam_fail_seconds_min, jam_fail_seconds - float(field_pressure - 1))
+	return maxf(jam_fail_seconds_min, jam_fail_seconds - float(field_pressure - 1) * 0.5)
 
 func set_difficulty(next_difficulty_id: String) -> void:
 	difficulty_id = next_difficulty_id
@@ -554,7 +549,6 @@ func set_difficulty(next_difficulty_id: String) -> void:
 func _apply_difficulty_preset() -> void:
 	var preset: Dictionary = DIFFICULTY_PRESETS.get(difficulty_id, DIFFICULTY_PRESETS["normal"])
 	base_rise_interval = float(preset.get("base_rise_interval", 4.4))
-	min_rise_interval = float(preset.get("min_rise_interval", 1.7))
 	pressure_step_seconds = float(preset.get("pressure_step_seconds", 10.0))
 	jam_fail_seconds = float(preset.get("jam_fail_seconds", 10.0))
 	jam_fail_seconds_min = float(preset.get("jam_fail_seconds_min", 5.0))
