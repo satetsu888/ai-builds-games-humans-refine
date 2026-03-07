@@ -13,7 +13,7 @@ const COLS := 10
 const VISIBLE_ROWS := 11
 const TILE_SIZE := 44.0
 const FIELD_WIDTH := COLS * TILE_SIZE
-const FIELD_ORIGIN := Vector2(260.0, 28.0)
+const FIELD_ORIGIN := Vector2(180.0, 28.0)
 const VOID_HEIGHT := 72.0
 const DIFFICULTY_PRESETS := {
 	"easy": {
@@ -364,7 +364,7 @@ func _seeded_glyph(col: int, row: int) -> int:
 	return value % 3
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, Vector2(960.0, 540.0)), Color8(58, 58, 64))
+	draw_rect(Rect2(Vector2.ZERO, get_viewport_rect().size), Color8(58, 58, 64))
 	var bg_rect := Rect2(FIELD_ORIGIN - Vector2(28.0, 20.0), Vector2(FIELD_WIDTH + 56.0, VISIBLE_ROWS * TILE_SIZE + VOID_HEIGHT + 40.0))
 	draw_rect(bg_rect, Color8(16, 16, 24))
 	draw_rect(bg_rect, Color8(245, 238, 220, 72), false, 2.0)

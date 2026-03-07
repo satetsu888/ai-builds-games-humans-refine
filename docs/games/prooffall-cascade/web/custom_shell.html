@@ -26,7 +26,7 @@ body {
 
 	#canvas {
 		display: block;
-		width: 960px;
+		width: 800px;
 		height: 540px;
 	}
 
@@ -37,12 +37,12 @@ body {
 		$GODOT_HEAD_INCLUDE
 	</head>
 	<body>
-			<canvas id="canvas" width="960" height="540"></canvas>
+			<canvas id="canvas" width="800" height="540"></canvas>
 		<script src="$GODOT_URL"></script>
 		<script>
 const GODOT_CONFIG = $GODOT_CONFIG;
 const gameCanvas = document.getElementById('canvas');
-const canvasSize = { x: 960, y: 540 };
+const canvasSize = { x: 800, y: 540 };
 gameCanvas.width = canvasSize.x;
 gameCanvas.height = canvasSize.y;
 

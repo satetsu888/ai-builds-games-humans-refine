@@ -1,7 +1,7 @@
 ; Engine configuration file.
 ; Template defaults:
 ; - name: Template Game
-; - resolution: 960x540
+; - resolution: 800x540
 
 config_version=5
 
@@ -12,7 +12,7 @@ run/main_scene="res://main.tscn"
 
 [display]
 
-window/size/viewport_width=960
+window/size/viewport_width=800
 window/size/viewport_height=540
 window/stretch/mode="canvas_items"
 window/stretch/aspect="keep"

@@ -19,7 +19,7 @@ var ui_theme := Theme.new()
 
 func _ready() -> void:
 	_build_theme()
-	score_label.position = Vector2(260.0, 8.0)
+	score_label.position = Vector2(180.0, 8.0)
 	score_label.theme = ui_theme
 	score_label.add_theme_font_override("font", ui_theme.get_font("font", "ScoreLabel"))
 	score_label.add_theme_font_size_override("font_size", ui_theme.get_font_size("font_size", "ScoreLabel"))
@@ -29,7 +29,7 @@ func _ready() -> void:
 	score_label.text = "Score 0"
 	add_child(score_label)
 
-	pressure_label.position = Vector2(560.0, 8.0)
+	pressure_label.position = Vector2(480.0, 8.0)
 	pressure_label.theme = ui_theme
 	pressure_label.add_theme_font_override("font", ui_theme.get_font("font", "ScoreLabel"))
 	pressure_label.add_theme_font_size_override("font_size", ui_theme.get_font_size("font_size", "ScoreLabel"))
@@ -63,7 +63,7 @@ func is_title_visible() -> bool:
 	return title_overlay.visible
 
 func _build_game_over_card() -> void:
-	game_over_panel.position = Vector2(320.0, 236.0)
+	game_over_panel.position = Vector2(240.0, 236.0)
 	game_over_panel.size = Vector2(320.0, 152.0)
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color8(20, 18, 28, 236)
