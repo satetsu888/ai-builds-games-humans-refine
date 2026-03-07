@@ -949,6 +949,8 @@ func _spawn_splitter_shard(pos: Vector2, vel: Vector2, generation: int) -> void:
 	_record_spawned_enemy("splitter_shard")
 
 func _update_spawning(delta: float) -> void:
+	if ship_respawn_pending:
+		return
 	if elapsed_time >= float(wave_state["end"]):
 		wave_index += 1
 		wave_state = _generate_wave(wave_index)
@@ -1001,9 +1003,7 @@ func _on_player_hit_with_shield(enemy: Dictionary, distance_to_enemy: float) -> 
 	shield_active = false
 	shield_recharge_timer = SHIELD_RECHARGE_TIME
 	hit_invuln_timer = 0.32
-	multiplier = maxi(1, multiplier - 2)
 	chain_streak = 0
-	multiplier_decay_timer = _get_decay_interval_for_multiplier(multiplier)
 	var away: Vector2 = (player_pos - enemy.pos).normalized() if distance_to_enemy > 0.001 else Vector2.RIGHT.rotated(player_angle + PI)
 	player_vel += away * 360.0
 	damage_flash = 1.0
@@ -1013,7 +1013,7 @@ func _on_player_hit_with_shield(enemy: Dictionary, distance_to_enemy: float) -> 
 func _on_player_ship_lost(enemy: Dictionary, distance_to_enemy: float) -> void:
 	lives = maxi(0, lives - 1)
 	hit_invuln_timer = 0.0
-	multiplier = maxi(1, multiplier - 2)
+	multiplier = 1
 	chain_streak = 0
 	multiplier_decay_timer = _get_decay_interval_for_multiplier(multiplier)
 	var away: Vector2 = (player_pos - enemy.pos).normalized() if distance_to_enemy > 0.001 else Vector2.RIGHT.rotated(player_angle + PI)
@@ -1023,6 +1023,7 @@ func _on_player_ship_lost(enemy: Dictionary, distance_to_enemy: float) -> void:
 	_play_sfx("ship_lost", {"impact_speed": enemy.vel.length(), "difficulty": difficulty, "lives": lives})
 	chasers.clear()
 	mines.clear()
+	spawn_timer = 0.0
 	if lives <= 0:
 		_trigger_game_over()
 		return
