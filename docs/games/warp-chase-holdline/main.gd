@@ -109,6 +109,9 @@ const AUDIO_MIX_RATE := 22050.0
 const AUDIO_BUFFER_LENGTH := 0.5
 const ENGINE_BUFFER_LENGTH := 0.12
 const AMBIENT_BUFFER_LENGTH := 0.24
+const BGM_STREAM_PATH := "res://assets/audio/bgm.mp3"
+const BGM_PLAYER_GAIN := 0.15
+const BGM_AMBIENT_MIX_SCALE := 0.58
 const ENGINE_MAX_FILL_FRAMES := 1024
 const AMBIENT_MAX_FILL_FRAMES := 1024
 const BASE_CACHED_SFX_EVENTS := {
@@ -231,6 +234,11 @@ var ambient_playback: AudioStreamGeneratorPlayback
 var ambient_amp := 0.0
 var ambient_target_amp := 0.0
 var ambient_state := {}
+var bgm_player: AudioStreamPlayer
+var bgm_enabled := false
+var app_audio_focus := true
+var bgm_resume_position := 0.0
+var bgm_paused_by_focus := false
 var enemy_motif_cache: Array = []
 var enemy_motif_refresh_timer := 0.0
 var danger_sfx_cooldown := 0.0
@@ -262,6 +270,16 @@ func _ready() -> void:
 	_setup_typography_theme()
 	_setup_audio()
 	_reset_game()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_IN or what == NOTIFICATION_WM_WINDOW_FOCUS_IN or what == NOTIFICATION_APPLICATION_RESUMED:
+		app_audio_focus = true
+	elif what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT or what == NOTIFICATION_APPLICATION_PAUSED:
+		app_audio_focus = false
+		if is_instance_valid(bgm_player) and bgm_player.playing:
+			bgm_resume_position = maxf(0.0, bgm_player.get_playback_position())
+			bgm_paused_by_focus = true
+			bgm_player.stop()
 
 func _physics_process(delta: float) -> void:
 	_simulate_frame(delta)
@@ -1102,6 +1120,7 @@ func _setup_audio() -> void:
 	for event_name in _all_runtime_sfx_events():
 		_create_sfx_player(str(event_name))
 	_create_engine_player()
+	_create_bgm_player()
 	_create_ambient_player()
 
 func _build_cached_sfx_event_map() -> Dictionary:
@@ -1142,6 +1161,24 @@ func _create_ambient_player() -> void:
 	ambient_player = AudioRuntime.create_generator_player(AUDIO_MIX_RATE, AMBIENT_BUFFER_LENGTH, "Master", 8.0)
 	add_child(ambient_player)
 
+func _create_bgm_player() -> void:
+	if not ResourceLoader.exists(BGM_STREAM_PATH):
+		bgm_enabled = false
+		return
+	var stream := load(BGM_STREAM_PATH)
+	if not (stream is AudioStream):
+		bgm_enabled = false
+		return
+	if stream is AudioStreamMP3:
+		var mp3_stream := stream as AudioStreamMP3
+		mp3_stream.loop = true
+	bgm_player = AudioStreamPlayer.new()
+	bgm_player.stream = stream
+	bgm_player.bus = "Master"
+	bgm_player.volume_db = linear_to_db(BGM_PLAYER_GAIN)
+	add_child(bgm_player)
+	bgm_enabled = true
+
 func _stop_all_sfx() -> void:
 	AudioRuntime.stop_audio_players(sfx_players.values())
 	for pool_item in cached_sfx_players.values():
@@ -1149,6 +1186,9 @@ func _stop_all_sfx() -> void:
 		AudioRuntime.stop_audio_players(pool)
 	AudioRuntime.stop_if_valid(engine_player)
 	AudioRuntime.stop_if_valid(ambient_player)
+	AudioRuntime.stop_if_valid(bgm_player)
+	bgm_resume_position = 0.0
+	bgm_paused_by_focus = false
 	engine_playback = null
 	ambient_playback = null
 	var state := AudioRuntime.reset_audio_runtime_state()
@@ -1294,10 +1334,37 @@ func _apply_engine_loop_controls() -> void:
 func _update_ambient_loop(delta: float) -> void:
 	if not _is_runtime_audio_active() or not is_instance_valid(ambient_player):
 		return
+	if bgm_enabled:
+		_update_bgm_loop()
 	if _can_play_ambient_content():
 		_update_ambient_gameplay(delta)
 		return
 	_update_ambient_release(delta)
+
+func _update_bgm_loop() -> void:
+	if not is_instance_valid(bgm_player):
+		return
+	if not app_audio_focus:
+		if bgm_player.playing:
+			bgm_resume_position = maxf(0.0, bgm_player.get_playback_position())
+			bgm_paused_by_focus = true
+			bgm_player.stop()
+		return
+	if _can_play_bgm_content():
+		if not bgm_player.playing:
+			if bgm_paused_by_focus:
+				bgm_player.play(bgm_resume_position)
+				bgm_paused_by_focus = false
+			else:
+				bgm_player.play()
+		return
+	if bgm_player.playing:
+		bgm_resume_position = 0.0
+		bgm_paused_by_focus = false
+		bgm_player.stop()
+
+func _can_play_bgm_content() -> bool:
+	return not title_screen_active and not game_over
 
 func _can_play_ambient_content() -> bool:
 	return AudioRuntime.can_play_ambient_content(title_screen_active, game_over, ship_respawn_pending)
@@ -1315,6 +1382,8 @@ func _update_ambient_gameplay(delta: float) -> void:
 	ambient_target_amp = 0.0
 	if not enemy_motifs.is_empty():
 		ambient_target_amp = ENEMY_MOTIF_BASE_LEVEL + danger * ENEMY_MOTIF_DANGER_LEVEL
+		if bgm_enabled:
+			ambient_target_amp *= BGM_AMBIENT_MIX_SCALE
 	ambient_amp = lerpf(ambient_amp, ambient_target_amp, clampf(delta * AMBIENT_FADE_SPEED, 0.0, 1.0))
 	if not _ensure_ambient_playback_ready():
 		return
