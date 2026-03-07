@@ -108,12 +108,12 @@ const BEHAVIOR_EVENT_KEYS := [
 const AUDIO_MIX_RATE := 22050.0
 const AUDIO_BUFFER_LENGTH := 0.5
 const ENGINE_BUFFER_LENGTH := 0.12
-const AMBIENT_BUFFER_LENGTH := 0.24
+const AMBIENT_BUFFER_LENGTH := 0.35
 const BGM_STREAM_PATH := "res://assets/audio/bgm.mp3"
 const BGM_PLAYER_GAIN := 0.15
 const BGM_AMBIENT_MIX_SCALE := 0.58
 const ENGINE_MAX_FILL_FRAMES := 1024
-const AMBIENT_MAX_FILL_FRAMES := 1024
+const AMBIENT_MAX_FILL_FRAMES := 1280
 const BASE_CACHED_SFX_EVENTS := {
 	"score": true,
 	"near_miss": true,
@@ -142,7 +142,8 @@ const AMBIENT_RELEASE_SPEED := 1.7
 const AMBIENT_STOP_AMP_EPS := 0.004
 const ENEMY_MOTIF_BASE_LEVEL := 0.86
 const ENEMY_MOTIF_DANGER_LEVEL := 0.34
-const ENEMY_MOTIF_REFRESH_INTERVAL := 0.05
+const ENEMY_MOTIF_REFRESH_INTERVAL := 0.08
+const ENEMY_COLLISION_CELL_SIZE := 112.0
 const ENEMY_SPAWN_SFX_COOLDOWN := 0.1
 const ENEMY_SPAWN_SFX_GLOBAL_COOLDOWN := 0.022
 const ENEMY_SPAWN_SFX_PER_FRAME_LIMIT := 2
@@ -243,6 +244,9 @@ var enemy_motif_cache: Array = []
 var enemy_motif_refresh_timer := 0.0
 var danger_sfx_cooldown := 0.0
 var danger_peak_hold := 0.0
+var anchor_field_cache: Array = []
+var vector_glow_budget_scale := 1.0
+var warp_detail_scale := 1.0
 var ui_font_base: Font
 var ui_font_display: Font
 var ui_font_numeric: Font
@@ -334,6 +338,7 @@ func _simulate_frame(delta: float) -> void:
 		queue_redraw()
 		return
 
+	_refresh_anchor_field_cache()
 	_update_player(delta)
 	wrap_grace_timer = max(0.0, wrap_grace_timer - delta)
 	hit_invuln_timer = max(0.0, hit_invuln_timer - delta)
@@ -394,16 +399,26 @@ func _update_activity_state(delta: float) -> void:
 
 func _get_anchor_slow_ratio(pos: Vector2) -> float:
 	var ratio := 0.0
+	for field in anchor_field_cache:
+		var data: Dictionary = field
+		var rr := float(data.get("radius", 0.0))
+		var center := Vector2(data.get("pos", Vector2.ZERO))
+		var d: float = center.distance_to(pos)
+		if d < rr:
+			ratio = maxf(ratio, clampf(1.0 - d / rr, 0.0, 1.0))
+	return ratio
+
+func _refresh_anchor_field_cache() -> void:
+	anchor_field_cache.clear()
 	for c in chasers:
 		if str(c.type) != "anchor":
 			continue
 		if float(c.anchor_hold) <= 0.0:
 			continue
-		var rr := float(c.anchor_radius)
-		var d: float = c.pos.distance_to(pos)
-		if d < rr:
-			ratio = maxf(ratio, clampf(1.0 - d / rr, 0.0, 1.0))
-	return ratio
+		anchor_field_cache.append({
+			"pos": Vector2(c.pos),
+			"radius": float(c.anchor_radius),
+		})
 
 func _tick_chaser_timers(chaser: Dictionary, delta: float) -> void:
 	chaser.near_cd = max(0.0, chaser.near_cd - delta)
@@ -838,18 +853,47 @@ func _apply_enemy_pair_collision(ci: Dictionary, cj: Dictionary, remove_flags: A
 	_spawn_pulse(center, Color(0.78, 1.0, 0.31, 0.95), 46.0, 0.36)
 
 func _handle_enemy_enemy_contacts(remove_flags: Array, pending_split_events: Array) -> void:
+	var grid := _build_enemy_spatial_grid()
 	for i in range(chasers.size()):
 		if remove_flags[i]:
 			continue
-		for j in range(i + 1, chasers.size()):
-			if remove_flags[j]:
-				continue
-			var ci = chasers[i]
-			var cj = chasers[j]
-			if not _can_enemy_pair_collide(ci, cj):
-				continue
-			_apply_enemy_pair_collision(ci, cj, remove_flags, i, j, pending_split_events)
-			break
+		var ci = chasers[i]
+		var cell := _enemy_grid_cell(Vector2(ci.pos))
+		for oy in range(-1, 2):
+			for ox in range(-1, 2):
+				var key := Vector2i(cell.x + ox, cell.y + oy)
+				var bucket: Array = grid.get(key, [])
+				for idx in bucket:
+					var j := int(idx)
+					if j <= i or remove_flags[j]:
+						continue
+					var cj = chasers[j]
+					if not _can_enemy_pair_collide(ci, cj):
+						continue
+					_apply_enemy_pair_collision(ci, cj, remove_flags, i, j, pending_split_events)
+					break
+				if remove_flags[i]:
+					break
+			if remove_flags[i]:
+				break
+
+func _enemy_grid_cell(pos: Vector2) -> Vector2i:
+	return Vector2i(
+		int(floor(pos.x / ENEMY_COLLISION_CELL_SIZE)),
+		int(floor(pos.y / ENEMY_COLLISION_CELL_SIZE))
+	)
+
+func _build_enemy_spatial_grid() -> Dictionary:
+	var grid: Dictionary = {}
+	for i in range(chasers.size()):
+		var c = chasers[i]
+		var cell := _enemy_grid_cell(Vector2(c.pos))
+		if not grid.has(cell):
+			grid[cell] = []
+		var bucket: Array = grid[cell]
+		bucket.append(i)
+		grid[cell] = bucket
+	return grid
 
 func _collect_survivors(remove_flags: Array) -> Array:
 	var survivors: Array = []
@@ -1609,6 +1653,12 @@ func _is_thrusting() -> bool:
 	return thrusting
 
 func _draw() -> void:
+	if chasers.size() >= 8 or mines.size() >= 8:
+		vector_glow_budget_scale = 0.58
+		warp_detail_scale = 0.62
+	else:
+		vector_glow_budget_scale = 1.0
+		warp_detail_scale = 1.0
 	draw_rect(Rect2(Vector2.ZERO, arena_size), Color(0.05, 0.075, 0.13, 1.0), true)
 	_draw_warped_grid()
 	_draw_atmosphere_overlay()
@@ -1627,7 +1677,8 @@ func _draw() -> void:
 
 func _draw_warped_grid() -> void:
 	_draw_warped_grid_layer(72.0, 1.3, 0.62, Vector2(8.0, -6.0), 0.42)
-	_draw_warped_grid_layer(48.0, 2.2, 1.0, Vector2(-11.0, 9.0), 1.0)
+	if warp_detail_scale > 0.9:
+		_draw_warped_grid_layer(48.0, 2.2, 1.0, Vector2(-11.0, 9.0), 1.0)
 
 func _draw_warped_grid_layer(spacing: float, warp_amp: float, flow_speed: float, flow_dir: Vector2, alpha_scale: float) -> void:
 	var period := spacing * 2.0
@@ -2086,20 +2137,28 @@ func _draw_ui() -> void:
 func _draw_warped_polyline(points: Array, color: Color, width: float, amp: float, glow_strength: float = VECTOR_GLOW_BASE) -> void:
 	if points.size() < 2:
 		return
-	for i in range(points.size() - 1):
+	var step := 1
+	# Keep small enemy silhouettes intact; decimate only high-segment polylines.
+	if warp_detail_scale < 0.8 and points.size() > 10:
+		step = 2
+	var i := 0
+	while i < points.size() - 1:
+		var next_i := mini(i + step, points.size() - 1)
 		var a: Vector2 = _warp_point(points[i], amp)
-		var b: Vector2 = _warp_point(points[i + 1], amp)
+		var b: Vector2 = _warp_point(points[next_i], amp)
 		_draw_vector_line(a, b, color, width, glow_strength)
+		i = next_i
 
 func _draw_vector_line(a: Vector2, b: Vector2, color: Color, width: float, glow_strength: float = VECTOR_GLOW_BASE) -> void:
-	var g := clampf(glow_strength, 0.0, 1.0)
+	var g := clampf(glow_strength * vector_glow_budget_scale, 0.0, 1.0)
 	if g > 0.001:
-		var inner_col := color
-		inner_col.a *= VECTOR_GLOW_INNER_ALPHA * g
 		var outer_col := color
 		outer_col.a *= VECTOR_GLOW_OUTER_ALPHA * g
 		draw_line(a, b, outer_col, width + 7.0 * g)
-		draw_line(a, b, inner_col, width + 3.8 * g)
+		if g >= 0.75:
+			var inner_col := color
+			inner_col.a *= VECTOR_GLOW_INNER_ALPHA * g
+			draw_line(a, b, inner_col, width + 3.8 * g)
 	draw_line(a, b, color, width)
 
 func _warp_point(p: Vector2, amp: float) -> Vector2:
