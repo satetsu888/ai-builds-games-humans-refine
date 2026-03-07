@@ -1,0 +1,11 @@
+tmp/
+
+# Shared ignores for publishable docs games.
+docs/games/**/.godot/
+docs/games/**/.tmp-godot-data/
+docs/games/**/.tmp-godot-config/
+docs/games/**/.tmp-godot-cache/
+docs/games/**/logs/
+docs/games/**/tools/tests/
+docs/games/**/*.uid
+docs/games/**/*.import

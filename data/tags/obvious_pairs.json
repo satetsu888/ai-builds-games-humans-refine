@@ -1,0 +1,28 @@
+{
+  "pairs": [
+    ["player-bounce", "obstacle-bounce"],
+    ["player-reflect", "weapon-reflect"],
+    ["player-reflect", "obstacle-bounce"],
+    ["weapon-chase", "obstacle-chase"],
+    ["weapon-ray", "weapon-auto_aiming"],
+    ["weapon-explosion", "weapon-time_limit"],
+    ["field-floors", "field-holes"],
+    ["field-gravity", "player-inverted"],
+    ["obstacle-split", "weapon-explosion"],
+    ["obstacle-penalty", "weapon-disablement"],
+    ["player-follow", "player-multiple"],
+    ["player-automatic", "field-auto_scroll"],
+    ["player-limited_vision", "weapon-smoke"],
+    ["weapon-change_field", "field-regenerate"],
+    ["player-paint", "field-multiple"],
+    ["weapon-vertical", "obstacle-fall"],
+    ["obstacle-stack", "field-floors"],
+    ["player-step_on", "obstacle-fall"],
+    ["weapon-interference", "obstacle-foresee"],
+    ["weapon-blow_off", "field-lanes"],
+    ["player-string", "weapon-arc"],
+    ["player-rotate", "weapon-ray"],
+    ["obstacle-chase", "field-lanes"],
+    ["weapon-wipe", "obstacle-split"]
+  ]
+}
