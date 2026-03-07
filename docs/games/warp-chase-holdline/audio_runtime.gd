@@ -9,6 +9,7 @@ static func all_runtime_sfx_events(enemy_unlock_order: Array) -> Array:
 		"shield_break",
 		"ship_lost",
 		"shield_ready",
+		"extra_life",
 		"wave_shift",
 		"game_over",
 	]
@@ -39,6 +40,8 @@ static func build_cached_sfx_streams(cached_sfx_events: Dictionary, mix_rate: fl
 					samples = AudioSynth.build_ship_lost_sfx_samples(params, vrng, mix_rate)
 				"shield_ready":
 					samples = AudioSynth.build_shield_ready_sfx_samples(params, vrng, mix_rate)
+				"extra_life":
+					samples = AudioSynth.build_extra_life_sfx_samples(params, vrng, mix_rate)
 				"wave_shift":
 					samples = AudioSynth.build_wave_shift_sfx_samples(params, vrng, mix_rate)
 				"game_over":
@@ -71,6 +74,8 @@ static func _cached_base_params(event_name: String) -> Dictionary:
 			return {"impact_speed": 200.0, "difficulty": 2.0, "lives": 1}
 		"shield_ready":
 			return {"difficulty": 2.0}
+		"extra_life":
+			return {"difficulty": 2.0, "lives": 4}
 		"wave_shift":
 			return {"difficulty": 2.0, "wave": 8}
 		"game_over":
@@ -107,6 +112,9 @@ static func cached_event_pitch_scale(event_name: String, params: Dictionary) -> 
 		"danger":
 			var danger := clampf(float(params.get("danger", 0.7)), 0.0, 1.0)
 			return 0.94 + danger * 0.16
+		"extra_life":
+			var lives := clampf(float(params.get("lives", 3.0)), 1.0, 5.0)
+			return 1.0 + (lives - 3.0) * 0.015
 		"game_over":
 			var mult := clampf(float(params.get("multiplier", 1.0)), 1.0, 12.0)
 			return 0.98 + (mult - 1.0) * 0.01
@@ -123,6 +131,8 @@ static func cached_event_volume_db(event_name: String, params: Dictionary) -> fl
 		"danger":
 			var danger := clampf(float(params.get("danger", 0.7)), 0.0, 1.0)
 			return linear_to_db(0.16 + danger * 0.12)
+		"extra_life":
+			return linear_to_db(0.34)
 		"game_over":
 			return linear_to_db(0.3)
 		_:

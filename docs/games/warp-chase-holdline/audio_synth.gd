@@ -266,6 +266,37 @@ static func build_shield_ready_sfx_samples(params: Dictionary, audio_rng: Random
 static func gen_shield_ready_sfx(playback: AudioStreamGeneratorPlayback, params: Dictionary, audio_rng: RandomNumberGenerator, mix_rate: float) -> void:
 	_push_samples(playback, build_shield_ready_sfx_samples(params, audio_rng, mix_rate))
 
+static func build_extra_life_sfx_samples(params: Dictionary, audio_rng: RandomNumberGenerator, mix_rate: float) -> PackedFloat32Array:
+	var color := semantic_color(audio_rng)
+	var duration := 0.24 + 0.06 * maxf(0.0, color)
+	var difficulty_level := clampf(float(params.get("difficulty", 1.0)), 1.0, 4.0)
+	var life_level := clampf(float(params.get("lives", 3.0)), 1.0, 5.0)
+	var detune := semantic_detune(audio_rng, 0.02)
+	var phase := 0.0
+	var phase_b := 0.0
+	var total_samples := int(duration * mix_rate)
+	var out := PackedFloat32Array()
+	out.resize(maxi(1, total_samples))
+	for i in range(out.size()):
+		var t := float(i) / mix_rate
+		var ratio := t / maxf(0.001, duration)
+		var pitch_jump := 1.0
+		if ratio > 0.56:
+			pitch_jump = 1.26
+		var freq := (620.0 + 360.0 * ratio + difficulty_level * 6.0 + life_level * 4.0) * detune * pitch_jump
+		phase += freq / mix_rate
+		phase_b += (freq * 1.5) / mix_rate
+		var env := sfx_envelope(t, duration, 0.08 + maxf(0.0, color) * 0.04, 0.62 + maxf(0.0, -color) * 0.12)
+		var bell := sine(phase) * 0.58 + sine(phase_b) * 0.23
+		var body := triangle(phase * 0.5) * 0.2
+		var shimmer := sine(phase * 2.0) * 0.08
+		var air := noise(audio_rng) * 0.018
+		out[i] = (bell + body + shimmer + air) * env * 0.52
+	return out
+
+static func gen_extra_life_sfx(playback: AudioStreamGeneratorPlayback, params: Dictionary, audio_rng: RandomNumberGenerator, mix_rate: float) -> void:
+	_push_samples(playback, build_extra_life_sfx_samples(params, audio_rng, mix_rate))
+
 static func build_wave_shift_sfx_samples(params: Dictionary, audio_rng: RandomNumberGenerator, mix_rate: float) -> PackedFloat32Array:
 	var color := semantic_color(audio_rng)
 	var duration := 0.17 + 0.04 * maxf(0.0, color)
@@ -314,6 +345,9 @@ static func render_sfx_event(playback: AudioStreamGeneratorPlayback, event_name:
 			return true
 		"shield_ready":
 			gen_shield_ready_sfx(playback, params, audio_rng, mix_rate)
+			return true
+		"extra_life":
+			gen_extra_life_sfx(playback, params, audio_rng, mix_rate)
 			return true
 		"wave_shift":
 			gen_wave_shift_sfx(playback, params, audio_rng, mix_rate)

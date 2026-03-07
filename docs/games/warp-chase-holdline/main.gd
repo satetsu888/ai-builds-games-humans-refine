@@ -121,6 +121,7 @@ const BASE_CACHED_SFX_EVENTS := {
 	"shield_break": true,
 	"ship_lost": true,
 	"shield_ready": true,
+	"extra_life": true,
 	"wave_shift": true,
 	"game_over": true,
 }
@@ -2292,7 +2293,7 @@ func _try_award_extra_life() -> void:
 			continue
 		lives += 1
 		_spawn_pulse(player_pos, Color(0.78, 1.0, 0.31, 0.85), 34.0, 0.28)
-		_play_sfx("shield_ready", {"difficulty": difficulty})
+		_play_sfx("extra_life", {"difficulty": difficulty, "lives": lives})
 
 func _reset_metric_trackers() -> void:
 	var m := MetricsTracker.reset_metric_trackers(THREAT_COST, SYNERGY_TEMPLATE_KEYS, BEHAVIOR_EVENT_KEYS)
