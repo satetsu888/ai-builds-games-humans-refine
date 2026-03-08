@@ -42,7 +42,7 @@ func update(delta: float, player_pos: Vector2, shot_edge: bool, reverse_edge: bo
 	}
 
 	spawn_timer -= delta
-	var spawn_interval := maxf(0.18, (0.48 / sqrt(difficulty)) - heat * 0.08)
+	var spawn_interval := maxf(0.14, (0.48 / sqrt(difficulty)) - heat * 0.08)
 	while spawn_timer <= 0.0:
 		var spawn_result: Dictionary = _spawn_spark(difficulty, heat)
 		out["spawned_types"].append("spark")
