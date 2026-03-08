@@ -7,7 +7,7 @@ const HudLayer = preload("res://hud_layer.gd")
 const FxAudio = preload("res://fx_audio.gd")
 
 const GLYPH_NAMES := ["A", "E", "O"]
-const GAME_OVER_INPUT_LOCK_SECONDS := 0.5
+const GAME_OVER_INPUT_LOCK_SECONDS := 1.0
 const SCORE_TARGET := 9999
 const BGM_STREAM_PATH := "res://assets/audio/bgm.mp3"
 const BGM_PLAYER_GAIN := 0.18
