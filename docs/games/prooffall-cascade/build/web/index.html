@@ -22,6 +22,7 @@ body {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	background: #10131a;
 }
 
 	#canvas {
@@ -33,15 +34,62 @@ body {
 #canvas:focus {
 	outline: none;
 }
+
+#loader {
+	position: fixed;
+	inset: 0;
+	display: grid;
+	place-content: center;
+	gap: 10px;
+	background: #10131a;
+	color: #e7edf8;
+	z-index: 10;
+	font-family: system-ui, sans-serif;
+}
+
+#loader-title {
+	font-size: 14px;
+	letter-spacing: 0.04em;
+	text-align: center;
+}
+
+#loader-bar {
+	width: 280px;
+	height: 10px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: #2a3142;
+}
+
+#loader-fill {
+	width: 0%;
+	height: 100%;
+	background: #7bd88f;
+	transition: width 80ms linear;
+}
+
+#loader-text {
+	font-size: 12px;
+	text-align: center;
+	opacity: 0.85;
+}
 		</style>
 		
 	</head>
 	<body>
+			<div id="loader">
+				<div id="loader-title">Loading...</div>
+				<div id="loader-bar"><div id="loader-fill"></div></div>
+				<div id="loader-text">0%</div>
+			</div>
 			<canvas id="canvas" width="800" height="540"></canvas>
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":5540840,"index.wasm":37685705},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":5540776,"index.wasm":37685705},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const gameCanvas = document.getElementById('canvas');
+const loader = document.getElementById('loader');
+const loaderFill = document.getElementById('loader-fill');
+const loaderText = document.getElementById('loader-text');
 const canvasSize = { x: 800, y: 540 };
 gameCanvas.width = canvasSize.x;
 gameCanvas.height = canvasSize.y;
@@ -62,7 +110,22 @@ window.addEventListener('orientationchange', fitCanvas);
 fitCanvas();
 
 const engine = new Engine(GODOT_CONFIG);
-engine.startGame();
+engine.startGame({
+	onProgress: (current, total) => {
+		if (total > 0) {
+			const ratio = Math.min(current / total, 1);
+			loaderFill.style.width = `${ratio * 100}%`;
+			loaderText.textContent = `${Math.floor(ratio * 100)}%`;
+			return;
+		}
+		loaderText.textContent = `${Math.floor(current / 1024)} KB`;
+	},
+}).then(() => {
+	loader.style.display = 'none';
+}).catch((error) => {
+	loaderText.textContent = 'Load failed';
+	console.error(error);
+});
 		</script>
 	</body>
 </html>
