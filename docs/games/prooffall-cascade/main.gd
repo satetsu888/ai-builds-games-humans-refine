@@ -8,6 +8,7 @@ const FxAudio = preload("res://fx_audio.gd")
 
 const GLYPH_NAMES := ["A", "E", "O"]
 const GAME_OVER_INPUT_LOCK_SECONDS := 0.5
+const SCORE_TARGET := 9999
 const BGM_STREAM_PATH := "res://assets/audio/bgm.mp3"
 const BGM_PLAYER_GAIN := 0.18
 
@@ -165,9 +166,13 @@ func _update_test_metrics() -> void:
 	entity_type_counts = field.get_type_counts()
 
 func _on_score_event(points: int, _world_pos: Vector2) -> void:
-	score += points
+	if game_over:
+		return
+	score = mini(score + points, SCORE_TARGET)
 	MetricsTracker.inc_behavior_event(behavior_event_counts, "score")
 	fx_audio.play_score(points, field.get_pressure_ratio())
+	if score >= SCORE_TARGET:
+		_on_score_target_reached()
 
 func _on_pulse_event(_world_pos: Vector2, glyph: int, cluster_size: int) -> void:
 	fx_audio.play_pulse(glyph, cluster_size)
@@ -190,6 +195,19 @@ func _on_jam_fail(_column: int) -> void:
 	MetricsTracker.inc_behavior_event(behavior_event_counts, "death")
 	fx_audio.play_game_over()
 	hud.show_game_over(score)
+
+func _on_score_target_reached() -> void:
+	if game_over:
+		return
+	game_over = true
+	game_over_input_lock_remaining = GAME_OVER_INPUT_LOCK_SECONDS
+	hud.show_victory(score, _compute_victory_pressure())
+
+func _compute_victory_pressure() -> float:
+	if field == null:
+		return 1.0
+	var step_seconds := maxf(0.001, float(field.pressure_step_seconds))
+	return 1.0 + elapsed / step_seconds
 
 func _ensure_actions() -> void:
 	_register_action("move_left", [KEY_LEFT, KEY_A])

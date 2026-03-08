@@ -3,12 +3,19 @@ extends CanvasLayer
 const DISPLAY_FONT: FontFile = preload("res://assets/fonts/SpecialElite-Regular.ttf")
 const INFO_FONT: FontFile = preload("res://assets/fonts/IBMPlexSans-Variable.ttf")
 const NUMERIC_FONT: FontFile = preload("res://assets/fonts/IBMPlexMono-SemiBold.ttf")
+const RESULT_PANEL_GAME_OVER_POS := Vector2(240.0, 236.0)
+const RESULT_PANEL_GAME_OVER_SIZE := Vector2(320.0, 152.0)
+const RESULT_PANEL_VICTORY_POS := Vector2(126.0, 220.0)
+const RESULT_PANEL_VICTORY_SIZE := Vector2(548.0, 186.0)
 
 var score_label := Label.new()
 var pressure_label := Label.new()
 var game_over_panel := Panel.new()
+var game_over_content := MarginContainer.new()
+var game_over_stack := VBoxContainer.new()
 var game_over_title := Label.new()
 var game_over_subtitle := Label.new()
+var game_over_pressure := Label.new()
 var game_over_hint := Label.new()
 var title_overlay := Control.new()
 var title_card := Panel.new()
@@ -47,7 +54,18 @@ func update_state(score_value: int, pressure: int) -> void:
 	pressure_label.text = "Pressure %d" % pressure
 
 func show_game_over(score_value: int) -> void:
+	_apply_result_layout(false)
+	game_over_title.text = "VOID CLAIMED THE PROOF"
 	game_over_subtitle.text = "Final Score %d" % score_value
+	game_over_pressure.visible = false
+	game_over_panel.visible = true
+
+func show_victory(score_value: int, pressure_value: float) -> void:
+	_apply_result_layout(true)
+	game_over_title.text = "WELL DONE. PROOF STABILIZED."
+	game_over_subtitle.text = "Final Score %d" % score_value
+	game_over_pressure.text = "Pressure %.2f" % pressure_value
+	game_over_pressure.visible = true
 	game_over_panel.visible = true
 
 func clear_game_over() -> void:
@@ -63,8 +81,8 @@ func is_title_visible() -> bool:
 	return title_overlay.visible
 
 func _build_game_over_card() -> void:
-	game_over_panel.position = Vector2(240.0, 236.0)
-	game_over_panel.size = Vector2(320.0, 152.0)
+	game_over_panel.position = RESULT_PANEL_GAME_OVER_POS
+	game_over_panel.size = RESULT_PANEL_GAME_OVER_SIZE
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color8(20, 18, 28, 236)
 	panel_style.border_color = Color8(245, 238, 220, 190)
@@ -80,17 +98,15 @@ func _build_game_over_card() -> void:
 	game_over_panel.visible = false
 	add_child(game_over_panel)
 
-	var content := MarginContainer.new()
-	content.set_anchors_preset(Control.PRESET_FULL_RECT)
-	content.add_theme_constant_override("margin_left", 16)
-	content.add_theme_constant_override("margin_top", 12)
-	content.add_theme_constant_override("margin_right", 16)
-	content.add_theme_constant_override("margin_bottom", 12)
-	game_over_panel.add_child(content)
+	game_over_content.set_anchors_preset(Control.PRESET_FULL_RECT)
+	game_over_content.add_theme_constant_override("margin_left", 16)
+	game_over_content.add_theme_constant_override("margin_top", 12)
+	game_over_content.add_theme_constant_override("margin_right", 16)
+	game_over_content.add_theme_constant_override("margin_bottom", 12)
+	game_over_panel.add_child(game_over_content)
 
-	var stack := VBoxContainer.new()
-	stack.add_theme_constant_override("separation", 6)
-	content.add_child(stack)
+	game_over_stack.add_theme_constant_override("separation", 6)
+	game_over_content.add_child(game_over_stack)
 
 	game_over_title.theme = ui_theme
 	game_over_title.add_theme_font_override("font", ui_theme.get_font("font", "DisplayLabel"))
@@ -100,7 +116,7 @@ func _build_game_over_card() -> void:
 	game_over_title.add_theme_constant_override("outline_size", ui_theme.get_constant("outline_size", "DisplayLabel"))
 	game_over_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	game_over_title.text = "VOID CLAIMED THE PROOF"
-	stack.add_child(game_over_title)
+	game_over_stack.add_child(game_over_title)
 
 	game_over_subtitle.theme = ui_theme
 	game_over_subtitle.add_theme_font_override("font", ui_theme.get_font("font", "ScoreLabel"))
@@ -108,7 +124,16 @@ func _build_game_over_card() -> void:
 	game_over_subtitle.add_theme_color_override("font_color", ui_theme.get_color("font_color", "ScoreLabel"))
 	game_over_subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	game_over_subtitle.text = "Final Score 0"
-	stack.add_child(game_over_subtitle)
+	game_over_stack.add_child(game_over_subtitle)
+
+	game_over_pressure.theme = ui_theme
+	game_over_pressure.add_theme_font_override("font", ui_theme.get_font("font", "ScoreLabel"))
+	game_over_pressure.add_theme_font_size_override("font_size", 20)
+	game_over_pressure.add_theme_color_override("font_color", ui_theme.get_color("font_color", "ScoreLabel"))
+	game_over_pressure.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	game_over_pressure.text = "Pressure 0.00"
+	game_over_pressure.visible = false
+	game_over_stack.add_child(game_over_pressure)
 
 	game_over_hint.theme = ui_theme
 	game_over_hint.add_theme_font_override("font", ui_theme.get_font("font", "InfoLabel"))
@@ -116,7 +141,33 @@ func _build_game_over_card() -> void:
 	game_over_hint.add_theme_color_override("font_color", ui_theme.get_color("font_color", "InfoLabel"))
 	game_over_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	game_over_hint.text = "Press Space/Down/S for title"
-	stack.add_child(game_over_hint)
+	game_over_stack.add_child(game_over_hint)
+
+func _apply_result_layout(is_victory: bool) -> void:
+	if is_victory:
+		game_over_panel.position = RESULT_PANEL_VICTORY_POS
+		game_over_panel.size = RESULT_PANEL_VICTORY_SIZE
+		game_over_content.add_theme_constant_override("margin_left", 26)
+		game_over_content.add_theme_constant_override("margin_top", 14)
+		game_over_content.add_theme_constant_override("margin_right", 26)
+		game_over_content.add_theme_constant_override("margin_bottom", 14)
+		game_over_stack.add_theme_constant_override("separation", 9)
+		game_over_title.add_theme_font_size_override("font_size", 20)
+		game_over_subtitle.add_theme_font_size_override("font_size", 18)
+		game_over_pressure.add_theme_font_size_override("font_size", 18)
+		game_over_hint.add_theme_font_size_override("font_size", 14)
+		return
+	game_over_panel.position = RESULT_PANEL_GAME_OVER_POS
+	game_over_panel.size = RESULT_PANEL_GAME_OVER_SIZE
+	game_over_content.add_theme_constant_override("margin_left", 16)
+	game_over_content.add_theme_constant_override("margin_top", 12)
+	game_over_content.add_theme_constant_override("margin_right", 16)
+	game_over_content.add_theme_constant_override("margin_bottom", 12)
+	game_over_stack.add_theme_constant_override("separation", 6)
+	game_over_title.add_theme_font_size_override("font_size", 24)
+	game_over_subtitle.add_theme_font_size_override("font_size", 20)
+	game_over_pressure.add_theme_font_size_override("font_size", 20)
+	game_over_hint.add_theme_font_size_override("font_size", 16)
 
 func _build_title_card() -> void:
 	title_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
