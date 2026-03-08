@@ -8,6 +8,8 @@ const FxAudio = preload("res://fx_audio.gd")
 
 const GLYPH_NAMES := ["A", "E", "O"]
 const GAME_OVER_INPUT_LOCK_SECONDS := 0.5
+const BGM_STREAM_PATH := "res://assets/audio/bgm.mp3"
+const BGM_PLAYER_GAIN := 0.18
 
 var test_mode := false
 var score := 0
@@ -28,6 +30,11 @@ var field: FieldController
 var player: PlayerController
 var hud: HudLayer
 var fx_audio: FxAudio
+var bgm_player: AudioStreamPlayer
+var bgm_enabled := false
+var app_audio_focus := true
+var bgm_resume_position := 0.0
+var bgm_paused_by_focus := false
 
 var active_entities: Array = []
 var entity_type_counts: Dictionary = {}
@@ -44,7 +51,18 @@ func _ready() -> void:
 	_reset_game()
 	_show_title_if_needed()
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_IN or what == NOTIFICATION_WM_WINDOW_FOCUS_IN or what == NOTIFICATION_APPLICATION_RESUMED:
+		app_audio_focus = true
+	elif what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT or what == NOTIFICATION_APPLICATION_PAUSED:
+		app_audio_focus = false
+		if is_instance_valid(bgm_player) and bgm_player.playing:
+			bgm_resume_position = maxf(0.0, bgm_player.get_playback_position())
+			bgm_paused_by_focus = true
+			bgm_player.stop()
+
 func _physics_process(delta: float) -> void:
+	_update_bgm_loop()
 	if waiting_for_title_start:
 		if test_mode or Input.is_action_just_pressed("pulse"):
 			_start_from_title()
@@ -286,6 +304,49 @@ func _ensure_runtime_nodes() -> void:
 	if fx_audio == null:
 		fx_audio = FxAudio.new()
 		add_child(fx_audio)
+	if bgm_player == null:
+		_create_bgm_player()
+
+func _create_bgm_player() -> void:
+	if not ResourceLoader.exists(BGM_STREAM_PATH):
+		bgm_enabled = false
+		return
+	var stream := load(BGM_STREAM_PATH)
+	if not (stream is AudioStream):
+		bgm_enabled = false
+		return
+	if stream is AudioStreamMP3:
+		var mp3_stream := stream as AudioStreamMP3
+		mp3_stream.loop = true
+	bgm_player = AudioStreamPlayer.new()
+	bgm_player.stream = stream
+	bgm_player.bus = "Master"
+	bgm_player.volume_db = linear_to_db(BGM_PLAYER_GAIN)
+	add_child(bgm_player)
+	bgm_enabled = true
+
+func _update_bgm_loop() -> void:
+	if not bgm_enabled or not is_instance_valid(bgm_player):
+		return
+	if not app_audio_focus:
+		if bgm_player.playing:
+			bgm_resume_position = maxf(0.0, bgm_player.get_playback_position())
+			bgm_paused_by_focus = true
+			bgm_player.stop()
+		return
+	var should_play := not waiting_for_title_start and not game_over
+	if should_play:
+		if not bgm_player.playing:
+			if bgm_paused_by_focus:
+				bgm_player.play(bgm_resume_position)
+				bgm_paused_by_focus = false
+			else:
+				bgm_player.play()
+		return
+	if bgm_player.playing:
+		bgm_resume_position = 0.0
+		bgm_paused_by_focus = false
+		bgm_player.stop()
 
 func _show_title_if_needed() -> void:
 	if test_mode:
