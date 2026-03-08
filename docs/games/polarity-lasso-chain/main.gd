@@ -9,6 +9,8 @@ const AudioManager = preload("res://game/audio_manager.gd")
 const TITLE_FADE_SECONDS := 0.32
 const GAME_OVER_INPUT_LOCK_SECONDS := 0.5
 const GAME_OVER_AUTO_RETURN_SECONDS := 3.0
+const BGM_STREAM_PATH := "res://assets/audio/bgm.mp3"
+const BGM_PLAYER_GAIN := 0.18
 
 var test_mode := false
 var test_action_a := false
@@ -56,9 +58,15 @@ var _title_transition := false
 var _title_transition_t := 0.0
 var _game_over_input_lock_t := 0.0
 var _game_over_auto_return_t := 0.0
+var _bgm_player: AudioStreamPlayer
+var _bgm_enabled := false
+var _app_audio_focus := true
+var _bgm_resume_position := 0.0
+var _bgm_paused_by_focus := false
 
 func _ready() -> void:
 	_audio.setup(self)
+	_create_bgm_player()
 	_reset_game()
 	_title_active = true
 	_title_transition = false
@@ -66,11 +74,22 @@ func _ready() -> void:
 	_game_over_input_lock_t = 0.0
 	_game_over_auto_return_t = 0.0
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_IN or what == NOTIFICATION_WM_WINDOW_FOCUS_IN or what == NOTIFICATION_APPLICATION_RESUMED:
+		_app_audio_focus = true
+	elif what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT or what == NOTIFICATION_APPLICATION_PAUSED:
+		_app_audio_focus = false
+		if is_instance_valid(_bgm_player) and _bgm_player.playing:
+			_bgm_resume_position = maxf(0.0, _bgm_player.get_playback_position())
+			_bgm_paused_by_focus = true
+			_bgm_player.stop()
+
 func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		_touch_pressed = bool(event.pressed)
 
 func _physics_process(delta: float) -> void:
+	_update_bgm_loop()
 	if test_mode:
 		return
 	var action_a := Input.is_action_pressed("ui_accept") \
@@ -735,3 +754,44 @@ func _spawn_spark_fade(pos: Vector2) -> void:
 		})
 	if _spark_fades.size() > 120:
 		_spark_fades = _spark_fades.slice(_spark_fades.size() - 120, _spark_fades.size())
+
+func _create_bgm_player() -> void:
+	if not ResourceLoader.exists(BGM_STREAM_PATH):
+		_bgm_enabled = false
+		return
+	var stream := load(BGM_STREAM_PATH)
+	if not (stream is AudioStream):
+		_bgm_enabled = false
+		return
+	if stream is AudioStreamMP3:
+		var mp3_stream := stream as AudioStreamMP3
+		mp3_stream.loop = true
+	_bgm_player = AudioStreamPlayer.new()
+	_bgm_player.stream = stream
+	_bgm_player.bus = "Master"
+	_bgm_player.volume_db = linear_to_db(BGM_PLAYER_GAIN)
+	add_child(_bgm_player)
+	_bgm_enabled = true
+
+func _update_bgm_loop() -> void:
+	if not _bgm_enabled or not is_instance_valid(_bgm_player):
+		return
+	if not _app_audio_focus:
+		if _bgm_player.playing:
+			_bgm_resume_position = maxf(0.0, _bgm_player.get_playback_position())
+			_bgm_paused_by_focus = true
+			_bgm_player.stop()
+		return
+	var should_play: bool = not test_mode and not _title_active and not _title_transition and not _state.game_over
+	if should_play:
+		if not _bgm_player.playing:
+			if _bgm_paused_by_focus:
+				_bgm_player.play(_bgm_resume_position)
+				_bgm_paused_by_focus = false
+			else:
+				_bgm_player.play()
+		return
+	if _bgm_player.playing:
+		_bgm_resume_position = 0.0
+		_bgm_paused_by_focus = false
+		_bgm_player.stop()

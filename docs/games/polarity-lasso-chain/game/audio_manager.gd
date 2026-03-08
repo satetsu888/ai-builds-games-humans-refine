@@ -46,10 +46,13 @@ func update(delta: float, heat: float, danger: float) -> void:
 		_hum_phase = fmod(_hum_phase + (84.0 / 22050.0), 1.0)
 
 func score(points: int, combo: int) -> void:
-	_emit_tone(320.0 + minf(float(points), 80.0) + combo * 16.0, 0.10 + combo * 0.01, 0.20, true)
+	var base := 270.0 + minf(float(points), 110.0) * 0.66 + combo * 12.0
+	var duration := clampf(0.18 + combo * 0.013, 0.18, 0.30)
+	var gain := clampf(0.22 + combo * 0.012, 0.22, 0.31)
+	_emit_space_rise(base, duration, gain)
 
 func damage() -> void:
-	_emit_noise_drop(0.28, 0.34)
+	_emit_space_impact(0.34, 0.32)
 
 func state_change() -> void:
 	_emit_tone(190.0, 0.12, 0.18, false)
@@ -90,4 +93,56 @@ func _emit_noise_drop(duration: float, gain: float) -> void:
 		var sweep := 220.0 - 130.0 * (t / duration)
 		phase = fmod(phase + (sweep / 22050.0), 1.0)
 		var sample := AudioSynth.sine(phase) * 0.65 + AudioSynth.noise(rng) * 0.35
+		AudioSynth.push_sample(_sfx_playback, sample * env * gain)
+
+func _emit_space_rise(base_freq: float, duration: float, gain: float) -> void:
+	if _sfx_playback == null:
+		return
+	var frames := int(duration * 22050.0)
+	var phase := 0.0
+	var phase_high := 0.0
+	var phase_air := 0.0
+	for i in range(frames):
+		if _sfx_playback.get_frames_available() <= 0:
+			break
+		var t := float(i) / 22050.0
+		var progress := clampf(t / maxf(duration, 0.001), 0.0, 1.0)
+		var rise := lerpf(1.0, 1.66, progress)
+		var fm := sin(t * TAU * (2.0 + progress * 3.6)) * 0.020
+		var drift := sin(t * TAU * 0.37) * 0.008
+		var freq := base_freq * rise * (1.0 + fm + drift)
+		phase = fmod(phase + (freq / 22050.0), 1.0)
+		phase_high = fmod(phase_high + (freq * 2.35 / 22050.0), 1.0)
+		phase_air = fmod(phase_air + (freq * 3.9 / 22050.0), 1.0)
+		var env := AudioSynth.sfx_envelope(t, duration, 0.05, 0.33)
+		var transient := AudioSynth.square(phase_air + sin(t * TAU * 9.6) * 0.008, 0.30) * 0.22 * (1.0 - progress)
+		var shimmer := AudioSynth.sine(phase_high + sin(t * TAU * 4.8) * 0.012) * 0.36
+		var body := AudioSynth.sine(phase) * 0.88
+		var support := AudioSynth.sine(fmod(phase * 0.51 + 0.22, 1.0)) * 0.07
+		var sample := body + shimmer + transient + support
+		AudioSynth.push_sample(_sfx_playback, sample * env * gain)
+
+func _emit_space_impact(duration: float, gain: float) -> void:
+	if _sfx_playback == null:
+		return
+	var frames := int(duration * 22050.0)
+	var phase := 0.0
+	var phase_ring := 0.0
+	var rng := RandomNumberGenerator.new()
+	rng.seed = randi()
+	for i in range(frames):
+		if _sfx_playback.get_frames_available() <= 0:
+			break
+		var t := float(i) / 22050.0
+		var progress := clampf(t / maxf(duration, 0.001), 0.0, 1.0)
+		var fall := lerpf(1.0, 0.42, progress)
+		var wobble := sin(t * TAU * (2.4 + progress * 1.2)) * 0.018
+		var freq := 220.0 * fall * (1.0 + wobble)
+		phase = fmod(phase + (freq / 22050.0), 1.0)
+		phase_ring = fmod(phase_ring + (freq * 2.8 / 22050.0), 1.0)
+		var env := AudioSynth.sfx_envelope(t, duration, 0.03, 0.62)
+		var thump := AudioSynth.sine(phase) * 0.78
+		var ring := AudioSynth.sine(phase_ring + sin(t * TAU * 6.2) * 0.012) * (0.38 + (1.0 - progress) * 0.12)
+		var dust := AudioSynth.noise(rng) * (0.16 * (1.0 - progress))
+		var sample := thump + ring + dust
 		AudioSynth.push_sample(_sfx_playback, sample * env * gain)
