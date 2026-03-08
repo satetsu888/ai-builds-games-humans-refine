@@ -15,18 +15,19 @@ const TILE_SIZE := 44.0
 const FIELD_WIDTH := COLS * TILE_SIZE
 const FIELD_ORIGIN := Vector2(180.0, 28.0)
 const VOID_HEIGHT := 72.0
+const DEFAULT_DIFFICULTY_ID := "normal"
 const DIFFICULTY_PRESETS := {
 	"easy": {
 		"base_rise_interval": 5.2,
 		"pressure_step_seconds": 12.0,
-		"jam_fail_seconds": 12.0,
-		"jam_fail_seconds_min": 6.0,
+		"jam_fail_seconds": 15.0,
+		"jam_fail_seconds_min": 10.0,
 	},
 	"normal": {
 		"base_rise_interval": 4.4,
 		"pressure_step_seconds": 10.0,
-		"jam_fail_seconds": 10.0,
-		"jam_fail_seconds_min": 5.0,
+		"jam_fail_seconds": 13.0,
+		"jam_fail_seconds_min": 8.0,
 	},
 	"hard": {
 		"base_rise_interval": 3.6,
@@ -52,11 +53,11 @@ var focus_glyph := 0
 var preview_cells: Dictionary = {}
 var field_pressure := 1
 var elapsed := 0.0
-var difficulty_id := "normal"
-var base_rise_interval := 4.4
-var pressure_step_seconds := 10.0
-var jam_fail_seconds := 10.0
-var jam_fail_seconds_min := 5.0
+var difficulty_id := DEFAULT_DIFFICULTY_ID
+var base_rise_interval := 0.0
+var pressure_step_seconds := 0.0
+var jam_fail_seconds := 0.0
+var jam_fail_seconds_min := 0.0
 var rise_timer := base_rise_interval
 var rng := RandomNumberGenerator.new()
 var current_seed := 1
@@ -547,11 +548,12 @@ func set_difficulty(next_difficulty_id: String) -> void:
 	_apply_difficulty_preset()
 
 func _apply_difficulty_preset() -> void:
-	var preset: Dictionary = DIFFICULTY_PRESETS.get(difficulty_id, DIFFICULTY_PRESETS["normal"])
-	base_rise_interval = float(preset.get("base_rise_interval", 4.4))
-	pressure_step_seconds = float(preset.get("pressure_step_seconds", 10.0))
-	jam_fail_seconds = float(preset.get("jam_fail_seconds", 10.0))
-	jam_fail_seconds_min = float(preset.get("jam_fail_seconds_min", 5.0))
+	var normal_preset: Dictionary = DIFFICULTY_PRESETS["normal"]
+	var preset: Dictionary = DIFFICULTY_PRESETS.get(difficulty_id, normal_preset)
+	base_rise_interval = float(preset.get("base_rise_interval", normal_preset["base_rise_interval"]))
+	pressure_step_seconds = float(preset.get("pressure_step_seconds", normal_preset["pressure_step_seconds"]))
+	jam_fail_seconds = float(preset.get("jam_fail_seconds", normal_preset["jam_fail_seconds"]))
+	jam_fail_seconds_min = float(preset.get("jam_fail_seconds_min", normal_preset["jam_fail_seconds_min"]))
 
 func _column_print_offset(col: int) -> float:
 	var strength := _print_history_strength(col)
