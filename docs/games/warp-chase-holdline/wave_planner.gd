@@ -12,7 +12,7 @@ static func generate_wave(index: int, wave_rng_seed: int, enemy_unlock_order: Ar
 	target_type_count = mini(target_type_count, unlocked.size())
 	var is_tutorial_wave := target_type_count == 1
 	var tutorial_type := str(unlocked[unlocked_count - 1])
-	if is_tutorial_wave and all_unlocked and not unlocked.is_empty():
+	if all_unlocked and not unlocked.is_empty():
 		tutorial_type = str(unlocked[local_rng.randi_range(0, unlocked.size() - 1)])
 	var budget: float = minf(max_threat_budget, 4.9 + sqrt(float(index) + 1.0) * 1.75 + float(index) * 0.38 + local_rng.randf_range(-0.25, 0.45))
 	if is_tutorial_wave:
