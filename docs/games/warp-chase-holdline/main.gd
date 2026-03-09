@@ -113,7 +113,7 @@ const BGM_STREAM_PATH := "res://assets/audio/bgm.mp3"
 const BGM_PLAYER_GAIN := 0.15
 const BGM_AMBIENT_MIX_SCALE := 0.58
 const ENGINE_MAX_FILL_FRAMES := 1024
-const AMBIENT_MAX_FILL_FRAMES := 1280
+const AMBIENT_MAX_FILL_FRAMES := 512
 const BASE_CACHED_SFX_EVENTS := {
 	"score": true,
 	"near_miss": true,
@@ -1431,6 +1431,8 @@ func _update_ambient_gameplay(delta: float) -> void:
 		if bgm_enabled:
 			ambient_target_amp *= BGM_AMBIENT_MIX_SCALE
 	ambient_amp = lerpf(ambient_amp, ambient_target_amp, clampf(delta * AMBIENT_FADE_SPEED, 0.0, 1.0))
+	if ambient_amp <= AMBIENT_STOP_AMP_EPS and ambient_state.get("enemy_voices", {}).is_empty():
+		return
 	if not _ensure_ambient_playback_ready():
 		return
 	params["master_amp"] = 0.0

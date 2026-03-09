@@ -471,10 +471,16 @@ static func push_ambient_frames(
 	var enemy_amp := clampf(float(params.get("enemy_amp", 0.0)), 0.0, 1.2)
 	var voices: Dictionary = state.get("enemy_voices", {})
 	_sync_enemy_voices(voices, enemy_motifs, audio_rng)
+	var active_voices := _collect_active_enemy_voices(voices)
+	if active_voices.is_empty() and enemy_amp <= 0.0001:
+		state["enemy_voices"] = voices
+		state["lp_left"] = move_toward(lp_left, 0.0, 0.02)
+		state["lp_right"] = move_toward(lp_right, 0.0, 0.02)
+		return
 	for _i in range(frames):
-		var frame_pair := _enemy_voice_frame(voices, mix_rate)
-		var left: float = float(frame_pair.get("left", 0.0)) * enemy_amp
-		var right: float = float(frame_pair.get("right", 0.0)) * enemy_amp
+		var frame_pair := _enemy_voice_frame(active_voices, mix_rate)
+		var left := frame_pair.x * enemy_amp
+		var right := frame_pair.y * enemy_amp
 		lp_left = lerpf(lp_left, left, 0.24)
 		lp_right = lerpf(lp_right, right, 0.24)
 		if not push_stereo_sample(playback, lp_left, lp_right):
@@ -516,12 +522,15 @@ static func _voice_freq_hz(profile: Dictionary, slot: int, phrase_step: int) -> 
 	return 220.0 * pow(2.0, float(quantized) / 12.0)
 
 static func _sync_enemy_voices(voices: Dictionary, enemy_motifs: Array, audio_rng: RandomNumberGenerator) -> void:
+	const MOTIF_AUDIBLE_DIST := 760.0
 	var top_motifs: Array = []
 	for motif in enemy_motifs:
 		var item: Dictionary = motif
 		var enemy_type := str(item.get("type", "hunter"))
 		var profile := _enemy_motif_profile(enemy_type)
 		var dist := float(item.get("dist", 9999.0))
+		if dist >= MOTIF_AUDIBLE_DIST:
+			continue
 		var priority := float(profile.get("priority", 0.5))
 		var rank := dist - priority * 90.0
 		var inserted := false
@@ -604,14 +613,12 @@ static func _sync_enemy_voices(voices: Dictionary, enemy_motifs: Array, audio_rn
 			stale_dict["timer"] = maxf(float(stale_dict.get("timer", 0.0)), 0.08)
 			voices[key] = stale_dict
 
-static func _enemy_voice_frame(voices: Dictionary, mix_rate: float) -> Dictionary:
+static func _collect_active_enemy_voices(voices: Dictionary) -> Array:
 	const MOTIF_AUDIBLE_DIST := 760.0
-	const SILENT_ENV_EPS := 0.0008
-	const SILENT_PROXIMITY_EPS := 0.001
+	const ACTIVE_ENV_EPS := 0.0008
+	var active: Array = []
 	if voices.is_empty():
-		return {"left": 0.0, "right": 0.0}
-	var sum_left := 0.0
-	var sum_right := 0.0
+		return active
 	var remove_keys: Array = []
 	for key_variant in voices.keys():
 		var enemy_type := str(key_variant)
@@ -620,6 +627,24 @@ static func _enemy_voice_frame(voices: Dictionary, mix_rate: float) -> Dictionar
 			remove_keys.append(enemy_type)
 			continue
 		var voice: EnemyVoice = voice_variant
+		var target_dist := clampf(voice.target_dist, 0.0, MOTIF_AUDIBLE_DIST)
+		var dist := clampf(voice.dist, 0.0, MOTIF_AUDIBLE_DIST)
+		if target_dist >= MOTIF_AUDIBLE_DIST - 1.0 and dist >= MOTIF_AUDIBLE_DIST - 1.0 and voice.env <= ACTIVE_ENV_EPS:
+			remove_keys.append(enemy_type)
+			continue
+		active.append(voice)
+	for key in remove_keys:
+		voices.erase(key)
+	return active
+
+static func _enemy_voice_frame(active_voices: Array, mix_rate: float) -> Vector2:
+	const MOTIF_AUDIBLE_DIST := 760.0
+	if active_voices.is_empty():
+		return Vector2.ZERO
+	var sum_left := 0.0
+	var sum_right := 0.0
+	for voice_variant in active_voices:
+		var voice: EnemyVoice = voice_variant
 		var profile := voice.profile
 		var dist := clampf(voice.dist, 0.0, MOTIF_AUDIBLE_DIST)
 		var target_dist := clampf(voice.target_dist, 0.0, MOTIF_AUDIBLE_DIST)
@@ -627,48 +652,32 @@ static func _enemy_voice_frame(voices: Dictionary, mix_rate: float) -> Dictionar
 		var target_pan := clampf(voice.target_pan, -1.0, 1.0)
 		dist = lerpf(dist, target_dist, 0.1)
 		pan = lerpf(pan, target_pan, 0.12)
-		var proximity := 1.0 - dist / MOTIF_AUDIBLE_DIST
-		if proximity <= 0.0:
-			proximity = 0.0
-		var interval_far := voice.interval_far
-		var interval_near := voice.interval_near
-		var decay := voice.decay
-		var attack := voice.attack
-		var width := voice.width
-		var gain := voice.gain
-		var noise_mix := voice.noise_mix
-		var mix_tri := voice.mix_tri
-		var mix_sine := voice.mix_sine
-		var mix_square := voice.mix_square
-		var motif_steps: Array = voice.motif_steps
+		var proximity := maxf(0.0, 1.0 - dist / MOTIF_AUDIBLE_DIST)
 		var timer := voice.timer - 1.0 / mix_rate
 		var env := voice.env
 		var seq_idx := voice.seq_idx
-		var slot := voice.slot
 		var freq := voice.freq
-		if proximity <= SILENT_PROXIMITY_EPS and env <= SILENT_ENV_EPS and target_dist >= MOTIF_AUDIBLE_DIST - 4.0:
-			remove_keys.append(enemy_type)
-			continue
+		var motif_steps: Array = voice.motif_steps
 		if timer <= 0.0 and proximity > 0.0 and not motif_steps.is_empty():
 			seq_idx = (seq_idx + 1) % motif_steps.size()
 			var step := int(motif_steps[seq_idx])
-			freq = _voice_freq_hz(profile, slot, step)
-			var interval := lerpf(interval_far, interval_near, proximity) * 0.68
+			freq = _voice_freq_hz(profile, voice.slot, step)
+			var interval := lerpf(voice.interval_far, voice.interval_near, proximity) * 0.68
 			var pulse_mod := 0.9 + 0.2 * float((seq_idx % 3)) / 2.0
 			timer += interval * pulse_mod
-			env = min(1.0, env + attack)
+			env = min(1.0, env + voice.attack)
 		var phase := fmod(voice.phase + freq / mix_rate, 1.0)
 		var phase2 := fmod(voice.phase2 + (freq * 1.47) / mix_rate, 1.0)
 		var lfo := fmod(voice.lfo + 0.28 / mix_rate, 1.0)
 		var noise_state := lerpf(voice.noise_state, triangle(phase * 7.0 + lfo * 0.37), 0.08)
-		env = move_toward(env, 0.0, decay / mix_rate)
-		var tone := sine(phase) * (mix_sine + 0.2)
-		tone += triangle(phase2) * (mix_tri * 0.78)
-		tone += square(phase * 0.5, 0.22) * (mix_square * 0.45)
+		env = move_toward(env, 0.0, voice.decay / mix_rate)
+		var tone := sine(phase) * (voice.mix_sine + 0.2)
+		tone += triangle(phase2) * (voice.mix_tri * 0.78)
+		tone += square(phase * 0.5, 0.22) * (voice.mix_square * 0.45)
 		var space := sine(lfo) * 0.05
-		var voice_sample := (tone + space + noise_state * (noise_mix * 0.45)) * env * (0.1 + proximity * 0.38) * gain * 1.35
-		sum_left += voice_sample * clampf(1.0 - pan * width, 0.2, 1.9)
-		sum_right += voice_sample * clampf(1.0 + pan * width, 0.2, 1.9)
+		var voice_sample := (tone + space + noise_state * (voice.noise_mix * 0.45)) * env * (0.1 + proximity * 0.38) * voice.gain * 1.35
+		sum_left += voice_sample * clampf(1.0 - pan * voice.width, 0.2, 1.9)
+		sum_right += voice_sample * clampf(1.0 + pan * voice.width, 0.2, 1.9)
 		voice.dist = dist
 		voice.pan = pan
 		voice.timer = timer
@@ -679,12 +688,4 @@ static func _enemy_voice_frame(voices: Dictionary, mix_rate: float) -> Dictionar
 		voice.phase2 = phase2
 		voice.lfo = lfo
 		voice.noise_state = noise_state
-		voices[enemy_type] = voice
-		if target_dist >= MOTIF_AUDIBLE_DIST - 1.0 and env <= 0.001:
-			remove_keys.append(enemy_type)
-	for key in remove_keys:
-		voices.erase(key)
-	return {
-		"left": clampf(sum_left, -0.58, 0.58),
-		"right": clampf(sum_right, -0.58, 0.58),
-	}
+	return Vector2(clampf(sum_left, -0.58, 0.58), clampf(sum_right, -0.58, 0.58))
