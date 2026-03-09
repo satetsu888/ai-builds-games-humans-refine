@@ -1095,8 +1095,8 @@ func _update_player_explosion_lines(delta: float) -> void:
 		seg.age += delta
 		if float(seg.age) >= float(seg.life):
 			continue
-			seg.pos = _wrap_in_arena(Vector2(seg.pos) + Vector2(seg.dir) * float(seg.speed) * delta, 2.0)
-			next_lines.append(seg)
+		seg.pos = _wrap_in_arena(Vector2(seg.pos) + Vector2(seg.dir) * float(seg.speed) * delta, 2.0)
+		next_lines.append(seg)
 	player_explosion_lines = next_lines
 
 func _random_spawn_edge_position(radius: float) -> Vector2:
