@@ -23,9 +23,9 @@ This project is a human-in-the-loop mini-game workshop:
 
 ## Sample Games
 
-- [Prooffall Cascade](https://abagames.github.io/ai-builds-games-humans-refine/docs/games/prooffall-cascade/build/web/index.html)
-- [Warp Chase Holdline](https://abagames.github.io/ai-builds-games-humans-refine/docs/games/warp-chase-holdline/build/web/index.html)
-- [Polarity Lasso Chain](https://abagames.github.io/ai-builds-games-humans-refine/docs/games/polarity-lasso-chain/build/web/index.html)
+- [Prooffall Cascade](https://abagames.github.io/ai-builds-games-humans-refine/games/prooffall-cascade/build/web/index.html)
+- [Warp Chase Holdline](https://abagames.github.io/ai-builds-games-humans-refine/games/warp-chase-holdline/build/web/index.html)
+- [Polarity Lasso Chain](https://abagames.github.io/ai-builds-games-humans-refine/games/polarity-lasso-chain/build/web/index.html)
 
 ## Workflow Overview
 
