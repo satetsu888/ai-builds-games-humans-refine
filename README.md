@@ -20,3 +20,22 @@ This project is a human-in-the-loop mini-game workshop:
 - Fast game prototyping with AI
 - Human feedback-driven refinement
 - Iterative quality improvement (design, mechanics, visuals, sound)
+
+## Sample Games
+
+- [Prooffall Cascade](https://abagames.github.io/ai-builds-games-humans-refine/docs/games/prooffall-cascade/build/web/index.html)
+- [Warp Chase Holdline](https://abagames.github.io/ai-builds-games-humans-refine/docs/games/warp-chase-holdline/build/web/index.html)
+- [Polarity Lasso Chain](https://abagames.github.io/ai-builds-games-humans-refine/docs/games/polarity-lasso-chain/build/web/index.html)
+
+## Workflow Overview
+
+`AGENTS.md` defines an 8-phase workflow for generating and refining a mini-game:
+
+1. Phase 1: Randomly choose mechanic, visual, and structure tags, plus the number of button types.
+2. Phase 2: Turn those tags into a concrete game design with rules, controls, and state definitions.
+3. Phase 3: Define the visual direction, palette, composition, and non-text feedback rules.
+4. Phase 4: Design procedural sound effects and event-to-sound mappings.
+5. Phase 5: Implement the game in Godot from the base template, following headless and structure rules.
+6. Phase 6: Run headless tests and evaluate whether skillful play beats monotonous input.
+7. Phase 7: Write an evaluation report with multiple improvement options, without changing the implementation.
+8. Phase 8: Apply human feedback, re-test, and export the updated game for further iteration.
