@@ -67,6 +67,7 @@ var _bgm_resume_position := 0.0
 var _bgm_paused_by_focus := false
 
 func _ready() -> void:
+	_ensure_movement_actions()
 	_ensure_retry_action()
 	_ensure_confirm_action()
 	_ui_numeric_font = load("res://assets/fonts/NotoSansMono-Bold.ttf") as FontFile
@@ -326,6 +327,22 @@ func _read_runtime_inputs() -> Dictionary:
 		"move_left": Input.is_action_pressed("ui_left"),
 		"move_right": Input.is_action_pressed("ui_right"),
 	}
+
+func _ensure_movement_actions() -> void:
+	_ensure_key_on_action("ui_up", KEY_W)
+	_ensure_key_on_action("ui_left", KEY_A)
+	_ensure_key_on_action("ui_down", KEY_S)
+	_ensure_key_on_action("ui_right", KEY_D)
+
+func _ensure_key_on_action(action_name: StringName, keycode: Key) -> void:
+	if not InputMap.has_action(action_name):
+		InputMap.add_action(action_name)
+	for ev in InputMap.action_get_events(action_name):
+		if ev is InputEventKey and ev.keycode == keycode:
+			return
+	var key_event := InputEventKey.new()
+	key_event.keycode = keycode
+	InputMap.action_add_event(action_name, key_event)
 
 func _ensure_retry_action() -> void:
 	if not InputMap.has_action("retry"):
@@ -636,7 +653,7 @@ func _draw_title_input_demo(baseline_y: float, pulse: float) -> void:
 	_draw_text_centered_at("<", left.get_center(), 18, Color("effff9"), _ui_numeric_font)
 	_draw_text_centered_at("v", down.get_center(), 18, Color("effff9"), _ui_numeric_font)
 	_draw_text_centered_at(">", right.get_center(), 18, Color("effff9"), _ui_numeric_font)
-	_draw_text_centered_at("MOVE", key_center + Vector2(0, 54), 14, Color("b7cad6"), ThemeDB.fallback_font)
+	_draw_text_centered_at("ARROWS / WASD", key_center + Vector2(0, 54), 14, Color("b7cad6"), ThemeDB.fallback_font)
 
 	var release_center := Vector2(center_x, baseline_y + 6.0)
 	draw_line(release_center + Vector2(-38, 0), release_center + Vector2(38, 0), Color(CABLE_BASE, 0.42), 3.0)
