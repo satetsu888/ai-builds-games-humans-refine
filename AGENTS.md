@@ -62,8 +62,9 @@ Design game rules using mechanic tags as seeds.
 1. Free-association and deliberate deviation from tags
 2. Define the core experience in one sentence
 3. Design controls (within `button_types` chosen in Phase 1)
-4. Design player engagement (see Engagement Design below)
-5. Validate via checklist (`guides/mini-game-design-guide.md` §10 and Engagement checklist below)
+4. Causal chain audit (see Causal Intuition Guard below)
+5. Design player engagement (see Engagement Design below)
+6. Validate via checklist (`guides/mini-game-design-guide.md` §10 and Engagement checklist below)
 
 **Output**: `tmp/games/<slug>/README.md` (core mechanics, controls, object specs, novelty rationale, tag log, state-variable table, tradeoff explanation, engagement design)
 
@@ -72,6 +73,31 @@ Design game rules using mechanic tags as seeds.
 - State variables must not exist "just to have a number." Before adding one, explicitly state one new decision that existing rules cannot express.
 - Each state variable must have at least one in-world, non-HUD causal manifestation (terrain/behavior/color/shape/speed/sound).
 - If expressible with existing state, prefer integration (state reduction) over adding new state.
+
+### Causal Intuition Guard (required)
+
+Every cause-and-effect rule must be explainable as a one-sentence physical analogy that a player can intuit without reading instructions.
+
+For each mechanic, write a **causal sentence** in the format: "When [action], [consequence] because [physical reason]."
+
+- **Pass**: "When you break a crystal, shards fly outward because that's how fragmentation works."
+- **Pass**: "When you hold the button, the character charges and glows because energy visibly accumulates."
+- **Fail**: "When you break a crystal, a zone appears that later spawns mutated enemies." (Requires learning an arbitrary rule — no physical intuition connects action to delayed consequence.)
+
+If a causal sentence requires abstract intermediary concepts (zones, invisible states, delayed triggers, parameters), redesign the mechanic:
+
+1. **Shorten the chain**: Remove intermediary steps. Can the consequence follow directly from the action?
+2. **Make it physical**: Replace abstract state changes with visible material transformations (breaking → fragments, charging → growing, burning → spreading).
+3. **Add a visual bridge**: If delay is mechanically necessary, add a visible process that connects action to consequence (a growing crack, a spreading glow, a traveling wave).
+
+Record causal sentences in `README.md` section `1.6 Causal Chain Audit`.
+
+### Causal Intuition Checklist
+
+- [ ] Every rule has a one-sentence physical analogy in `README.md` §1.6
+- [ ] No rule requires abstract jargon (zone, gauge, state, phase) to explain the cause-effect link
+- [ ] Every consequence shares a spatial or physical relationship with its cause
+- [ ] Delayed consequences have a visible bridge connecting action to result
 
 ### Engagement Design (required)
 
@@ -136,14 +162,16 @@ Design the screen using visual tags as seeds.
 2. Identify integration points with mechanics
 3. Decide a 3-5 color palette
 4. Design feedback effects aligned to tag style
-5. Document anti-AI-generic rules in `VISUAL_DESIGN.md`
+5. **Causal visibility audit**: For each causal chain from Phase 2 §1.6, design the visual expression that makes the cause-effect link self-evident without text (see `guides/visual-design-guide.md` §2.5). Verify spatial continuity, material continuity, temporal immediacy, and motion logic.
+6. Document anti-AI-generic rules in `VISUAL_DESIGN.md`
 
 - Visual hierarchy rule (1 protagonist / 1 danger / 1 reward)
 - Upper bound on template-like symbols
 - Feedback design that does not rely on UI text
 - Composition rules (gaze guidance and center-clutter avoidance)
+- Causal visibility mapping (how each mechanic's cause-effect chain is shown visually)
 
-6. Validate via checklist (`guides/visual-design-guide.md` §10)
+7. Validate via checklist (`guides/visual-design-guide.md` §10)
 
 **Output**: `tmp/games/<slug>/VISUAL_DESIGN.md` (concept, palette, rendering specs, effect design)
 Use `guides/visual-design-guide.md` §7.1 (`VISUAL_DESIGN.md Required Addendum Template`) for required addendum text.

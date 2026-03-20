@@ -7,7 +7,7 @@
 - Providing intuitive feedback for player actions.
 - Preventing monotonous operations (button mashing, idle play).
 
-## 2. Four Core Design Principles and Evaluation Criteria
+## 2. Five Core Design Principles and Evaluation Criteria
 
 Integrate "principles (what to do)" and "evaluation (confirmation items)" to clarify design guidelines.
 
@@ -33,6 +33,17 @@ Integrate "principles (what to do)" and "evaluation (confirmation items)" to cla
   - Are there moments where players feel "I've never seen this before"?
   - Are there elements that cannot be explained by existing tag combinations alone?
   - Do diverse developments emerge from a single mechanic?
+
+### (5) Causal Intuition
+
+- Principle: Every cause-and-effect rule in the game should map to a physical or spatial intuition that humans already possess. If a mechanic requires an abstract intermediary concept (zones, invisible states, delayed triggers) to explain the connection between action and result, redesign the causal chain so the connection is self-evident.
+- Good causal chain: action → immediate visible consequence that shares physical logic with the action. "Break a crystal → shards fly outward" (physical fragmentation). "Push an object → it slides and hits others" (momentum transfer). "Hold a button → character charges and glows" (accumulation is visible).
+- Bad causal chain: action → invisible state change → delayed/unrelated consequence. "Break a crystal → a zone is created → later, mutated crystals spawn from that zone" (requires learning an arbitrary rule).
+- Test: Can each rule be stated as a single-sentence physical analogy without using game-specific jargon (zone, gauge, state, phase)?
+- Evaluation:
+  - Can a first-time player predict what will happen before it happens, based on visual cues alone?
+  - Does every consequence share a spatial or physical relationship with its cause (proximity, contact, motion direction)?
+  - Are there any rules where the player must die once to learn an arbitrary connection?
 
 ## 3. Interaction Patterns (Reference)
 
@@ -110,7 +121,8 @@ Design in the following order from given tag groups.
 2. **Deviation Exploration**: Consider the "opposite," "negation," or "extreme" of tags, explore unexpected directions
 3. **Core Experience Decision**: Define the "momentary sensation" you want to give the player in one phrase
 4. **Mechanics Construction**: Design input scheme that realizes the core experience
-5. **Consistency Verification**: Verify design with the checklist in §10
+5. **Causal Chain Audit**: For each rule, write a one-sentence physical analogy. If you cannot, redesign the causal chain (see §2.5)
+6. **Consistency Verification**: Verify design with the checklist in §10
 
 ※ Use tags as stimulus for steps 1-2, don't be bound by tags from step 3 onwards.
 
@@ -162,13 +174,22 @@ Notes:
 - Concrete behavior pair: `<action_safe>` vs `<action_risky>`
 - Tradeoff explanation: how improving one state worsens another
 
+## 1.6 Causal Chain Audit
+
+For each game rule, a one-sentence physical analogy:
+
+| Rule | Causal Sentence | Physical Basis |
+| :--- | :--- | :--- |
+| <rule_1> | When [action], [consequence] because [reason] | <fragmentation / momentum / accumulation / etc.> |
+| <rule_2> | When [action], [consequence] because [reason] | ... |
+
 ## 2. Object Specifications
 
 <Each object's shape, behavior, collision handling>
 
 ## 3. Design Guide Analysis
 
-<Evaluation against four core design principles>
+<Evaluation against five core design principles, including causal intuition audit>
 
 ## 4. Relationship with Tags
 
@@ -207,13 +228,15 @@ Confirm the following before completing design.
 - [ ] Is the input scheme within the `button_types` limit chosen in Phase 1?
 - [ ] Is the game over condition single and visually obvious?
 - [ ] Is button mashing/idle play not the optimal solution?
-- [ ] Can you provide reasoned answers to all 4 principles in §2?
+- [ ] Can you provide reasoned answers to all 5 principles in §2?
 - [ ] Did ideas start from tags and have elements beyond existing patterns?
 - [ ] Are there moments of feeling "I've never seen this before"?
 - [ ] If state variables are used, is each one justified by a distinct decision purpose?
 - [ ] If state variables are used, does each one have a non-text in-world feedback channel?
 - [ ] Is there at least 1 explicit tradeoff between states/actions (including action vs terrain)?
 - [ ] Does at least one world-side persistent history remain from player actions?
+- [ ] Can every rule be stated as a one-sentence physical analogy without game-specific jargon?
+- [ ] Does every consequence share a spatial or physical relationship with its cause?
 
 ## Appendix: SCAMPER Method (Auxiliary Technique)
 

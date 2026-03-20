@@ -9,7 +9,7 @@ A guide for designing the visual layer of action mini-games using visual tags as
 - Making action feedback (hits, scoring, danger) feel satisfying through visuals alone.
 - Maintaining visual coherence when combining multiple tag directions.
 
-## 2. Four Core Visual Principles and Evaluation Criteria
+## 2. Five Core Visual Principles and Evaluation Criteria
 
 ### (1) Readability
 
@@ -30,6 +30,20 @@ A guide for designing the visual layer of action mini-games using visual tags as
 
 - Principle: Nothing on screen should be perfectly static. Subtle motion (breathing, pulsing, drifting) keeps the world alive. Object motion should communicate physics and weight, not just position change.
 - Evaluation: Does the game feel alive even when the player is not pressing anything? Do objects feel like they have mass and inertia?
+
+### (5) Causal Visibility
+
+- Principle: Every cause-and-effect relationship in the game mechanics must have a corresponding visual expression that makes the causal chain self-evident. If a mechanic creates a consequence, the visual design must show WHY that consequence follows from the action — through spatial proximity, physical motion, material transformation, or other visually intuitive cues. The goal is that the player never needs to read a rule; they can see the causality.
+- Design approach:
+  - **Spatial continuity**: Consequences appear at or near the location of the action, not at a distance. If breaking a crystal produces fragments, the fragments emerge from the crystal, not from an abstract zone elsewhere.
+  - **Material continuity**: The visual appearance of a consequence should resemble a transformed version of its cause. Shattered objects look like pieces of the original. Grown objects look like extensions of their source.
+  - **Temporal immediacy**: The consequence should follow the action with minimal delay. If delay is mechanically necessary, a visual "bridge" (a growing glow, an expanding wave, a traveling projectile) must connect the action moment to the consequence moment.
+  - **Motion logic**: The direction, speed, and trajectory of consequences should follow from the physics of the action. An explosion pushes things outward. A pull draws things inward. Gravity pulls downward. Breaking scatters.
+- Evaluation:
+  - For each mechanic, can you draw a single visual storyboard (action frame → consequence frame) where the connection is obvious without text labels?
+  - Are there any mechanics where the consequence appears at a location unrelated to the action?
+  - Are there any delayed consequences without a visual bridge connecting them to the original action?
+  - Could a player watching a replay (with no HUD) understand every cause and effect?
 
 ## 3. Role of Visual Tags
 
@@ -89,7 +103,8 @@ Design in the following order after mechanism design (Phase 2) is complete.
    - Damage / game over → (e.g., chromatic split, screen shake)
    - Near miss → (e.g., subtle rim flash, trail intensification)
    - State change → (e.g., palette shift, geometry transformation)
-7. **Checklist Verification**: Confirm with the checklist in §10.
+7. **Causal Visibility Audit**: For each mechanic with a cause-and-effect chain, verify the visual design satisfies spatial continuity, material continuity, temporal immediacy, and motion logic (see §2.5). If any causal chain lacks a self-evident visual bridge, redesign the visual expression or flag the mechanic for redesign.
+8. **Checklist Verification**: Confirm with the checklist in §10.
 
 ## 6. Mechanics × Visual Integration Patterns
 
@@ -380,7 +395,16 @@ Assign 3–5 roles based on the game's actual needs (e.g., Player, Threat, Backg
 | Game over | ... | ... |
 | State change | ... | ... |
 
-## 6. Relationship with Visual Tags
+## 6. Causal Visibility Map
+
+For each causal chain from the game design, how the visual design makes the connection self-evident:
+
+| Mechanic | Cause | Consequence | Visual Bridge |
+|:---|:---|:---|:---|
+| <mechanic_1> | <action> | <result> | <how the visuals connect them: spatial proximity, material resemblance, motion direction, etc.> |
+| <mechanic_2> | ... | ... | ... |
+
+## 7. Relationship with Visual Tags
 
 <How each tag influenced the design decisions>
 ```
@@ -395,6 +419,8 @@ Confirm the following before completing visual design.
 - [ ] Does the screen feel alive even during idle moments (subtle motion, breathing, ambient effects)?
 - [ ] Is the visual style grounded in the selected tags while going beyond literal interpretation?
 - [ ] Does the visual design enhance gameplay readability rather than compete with it?
+- [ ] Does every causal chain have a visually self-evident connection (spatial proximity, material resemblance, motion logic)?
+- [ ] Are there no delayed consequences without a visual bridge (glow buildup, traveling wave, etc.)?
 
 ## Appendix: Visual Anti-Patterns
 
@@ -433,4 +459,13 @@ Events need motion, color, and spatial response — not just UI text.
 ```
 Beautiful visual design that doesn't help the player understand the game.
 Visuals must serve readability and feedback, not just aesthetics.
+```
+
+### ❌ Causal Disconnection
+
+```
+Action happens at location A, consequence appears at location B with no visual link.
+"Break a crystal here → a zone appears → later, different enemies spawn from that zone."
+The player cannot predict or understand this chain from visuals alone.
+Every consequence must visually emerge from its cause: same location, similar material, connected motion.
 ```
