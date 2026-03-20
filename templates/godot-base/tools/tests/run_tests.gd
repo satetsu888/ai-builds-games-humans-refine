@@ -170,8 +170,8 @@ func _run_periodic_tests(game: Node, use_dict: bool, channels: Array[String]) ->
 	for period in PERIODIC_CYCLE_PERIODS:
 		for duty in PERIODIC_DUTY_RATIOS:
 			var on_frames := int(float(period) * duty)
-			var p := period  # capture for lambda
-			var on := on_frames  # capture for lambda
+			var p: int = int(period)
+			var on: int = on_frames
 			var policy := func(f: int) -> Dictionary:
 				return _input_with(channels, primary, (f % p) < on)
 			var label := "period_%d_duty_%d" % [period, int(duty * 100)]
