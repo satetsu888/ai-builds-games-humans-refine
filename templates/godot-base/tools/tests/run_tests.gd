@@ -10,6 +10,11 @@ const IMPROVEMENT_REPORT_PATH := "res://logs/improvement_report.md"
 const IMPROVEMENT_HISTORY_PATH := "res://logs/improvement_history.json"
 const IMPROVEMENT_HISTORY_LIMIT := 3
 
+## Periodic cycle periods (in frames) to test fixed-rhythm resistance.
+const PERIODIC_CYCLE_PERIODS := [30, 60, 90, 120, 180]
+## Duty ratios to test for each periodic cycle (fraction of cycle spent holding).
+const PERIODIC_DUTY_RATIOS := [0.25, 0.5, 0.75]
+
 var _failures := 0
 
 func _init() -> void:
@@ -39,29 +44,58 @@ func _init() -> void:
 
 	var use_dict := game.has_method("step_for_test_dict")
 	var channels := _get_input_channel_names(game)
+
+	# --- monotonous tests ---
 	var mono_results := _run_monotonous_tests(game, use_dict, channels)
-	var explore_results := _run_exploratory_tests(game, use_dict, channels)
 	var mono_max := 0
 	for key in mono_results:
 		var s := int(mono_results[key]["score"])
 		if s > mono_max:
 			mono_max = s
+
+	# --- periodic tests ---
+	var periodic_results := _run_periodic_tests(game, use_dict, channels)
+	var periodic_max := 0
+	for key in periodic_results:
+		var s := int(periodic_results[key]["score"])
+		if s > periodic_max:
+			periodic_max = s
+
+	# --- exploratory tests ---
+	var explore_results := _run_exploratory_tests(game, use_dict, channels)
 	var best: Dictionary = explore_results["best"]
-	var ratio := _calc_ratio(int(best["score"]), mono_max)
+	var all_scores: Array = explore_results["all_scores"]
+
+	# --- compute metrics ---
+	var explore_best_score := int(best["score"])
+	var exploratory_ratio := _calc_ratio(explore_best_score, mono_max)
+	var periodic_resistance := _calc_ratio(explore_best_score, periodic_max)
+	var score_stddev := _calc_stddev(all_scores)
+	var score_mean := _calc_mean(all_scores)
+	var score_cv := score_stddev / maxf(1.0, score_mean)
 
 	var report := {
-		"version": "1.0",
+		"version": "1.1",
 		"timestamp_utc": Time.get_datetime_string_from_system(true, true),
 		"monotonous": {
 			"cases": mono_results,
 			"max_score": mono_max,
 		},
+		"periodic": {
+			"cases": periodic_results,
+			"max_score": periodic_max,
+		},
 		"exploratory": {
 			"best": best,
 			"best_seed": int(explore_results["best_seed"]),
 			"best_variant": int(explore_results["best_variant"]),
+			"all_scores": all_scores,
+			"score_mean": snappedf(score_mean, 0.01),
+			"score_stddev": snappedf(score_stddev, 0.01),
+			"score_cv": snappedf(score_cv, 0.001),
 		},
-		"exploratory_ratio": ratio,
+		"exploratory_ratio": exploratory_ratio,
+		"periodic_resistance": periodic_resistance,
 		"telemetry": {
 			"death_analysis": {
 				"game_over": bool(best.get("game_over", false)),
@@ -74,7 +108,7 @@ func _init() -> void:
 				"avg_active_entities_30s": float(best.get("avg_active_entities_30s", 0.0)),
 			},
 			"scoring_analysis": {
-				"score": int(best.get("score", 0)),
+				"score": explore_best_score,
 			},
 			"input_analysis": {
 				"test_input_usage": best.get("test_input_usage", {}).duplicate(true),
@@ -89,11 +123,15 @@ func _init() -> void:
 		_update_improvement_reports(report)
 
 	if STRICT_GAMEPLAY_ASSERTS:
-		_assert_true(ratio > KPI_EXPLORATION_RATIO_MIN, "exploration ratio should exceed threshold")
+		_assert_true(exploratory_ratio > KPI_EXPLORATION_RATIO_MIN, "exploration ratio should exceed threshold")
 
-	print("exploration_ratio=", snappedf(ratio, 0.01))
+	print("exploratory_ratio=", snappedf(exploratory_ratio, 0.01))
+	print("periodic_resistance=", snappedf(periodic_resistance, 0.01))
+	print("score_cv=", snappedf(score_cv, 0.001))
 	print("tests completed")
 	_finish()
+
+# ── monotonous tests ──
 
 func _run_monotonous_tests(game: Node, use_dict: bool, channels: Array[String]) -> Dictionary:
 	var custom_policies: Array = []
@@ -113,6 +151,36 @@ func _run_monotonous_tests(game: Node, use_dict: bool, channels: Array[String]) 
 		"pulse_primary": _result_summary(_simulate(game, 1003, func(f): return _input_with(channels, primary, (f % 6) < 3), use_dict, channels)),
 	}
 
+# ── periodic tests ──
+
+func _run_periodic_tests(game: Node, use_dict: bool, channels: Array[String]) -> Dictionary:
+	var custom_policies: Array = []
+	if game.has_method("get_periodic_policies"):
+		custom_policies = game.get_periodic_policies()
+	if custom_policies.size() > 0:
+		var results := {}
+		for entry in custom_policies:
+			var pname: String = entry["name"]
+			var policy: Callable = entry["policy"]
+			results[pname] = _result_summary(_simulate(game, 3001 + results.size(), policy, use_dict, channels))
+		return results
+	var primary := channels[0]
+	var results := {}
+	var seed_counter := 3001
+	for period in PERIODIC_CYCLE_PERIODS:
+		for duty in PERIODIC_DUTY_RATIOS:
+			var on_frames := int(float(period) * duty)
+			var p := period  # capture for lambda
+			var on := on_frames  # capture for lambda
+			var policy := func(f: int) -> Dictionary:
+				return _input_with(channels, primary, (f % p) < on)
+			var label := "period_%d_duty_%d" % [period, int(duty * 100)]
+			results[label] = _result_summary(_simulate(game, seed_counter, policy, use_dict, channels))
+			seed_counter += 1
+	return results
+
+# ── exploratory tests ──
+
 func _run_exploratory_tests(game: Node, use_dict: bool, channels: Array[String]) -> Dictionary:
 	var custom_policies: Array = []
 	if game.has_method("get_exploration_policies"):
@@ -120,13 +188,16 @@ func _run_exploratory_tests(game: Node, use_dict: bool, channels: Array[String])
 	var best: Dictionary = {"score": -1}
 	var best_seed := -1
 	var best_variant := -1
+	var all_scores: Array = []
 	if custom_policies.size() > 0:
 		for vi in range(custom_policies.size()):
 			var policy: Callable = custom_policies[vi]["policy"]
 			for i in range(8):
 				var s := 2000 + vi * 100 + i
 				var result: Dictionary = _simulate(game, s, policy, use_dict, channels)
-				if int(result["score"]) > int(best["score"]):
+				var sc := int(result["score"])
+				all_scores.append(sc)
+				if sc > int(best["score"]):
 					best = result
 					best_seed = s
 					best_variant = vi
@@ -135,7 +206,9 @@ func _run_exploratory_tests(game: Node, use_dict: bool, channels: Array[String])
 			for i in range(8):
 				var s := 2000 + variant * 100 + i
 				var result: Dictionary = _simulate(game, s, func(frame: int): return _exploration_input_variant(frame, variant, channels), use_dict, channels)
-				if int(result["score"]) > int(best["score"]):
+				var sc := int(result["score"])
+				all_scores.append(sc)
+				if sc > int(best["score"]):
 					best = result
 					best_seed = s
 					best_variant = variant
@@ -143,6 +216,7 @@ func _run_exploratory_tests(game: Node, use_dict: bool, channels: Array[String])
 		"best": _result_summary(best),
 		"best_seed": best_seed,
 		"best_variant": best_variant,
+		"all_scores": all_scores,
 	}
 
 func _exploration_input_variant(frame: int, variant: int, channels: Array[String]) -> Dictionary:
@@ -158,6 +232,8 @@ func _exploration_input_variant(frame: int, variant: int, channels: Array[String
 		if bool(out[c0]) and bool(out[c1]):
 			out[c1] = false
 	return out
+
+# ── simulation ──
 
 func _simulate(game: Node, test_seed: int, policy: Callable, use_dict: bool, channels: Array[String]) -> Dictionary:
 	game.force_reset_for_test(test_seed)
@@ -192,6 +268,8 @@ func _simulate(game: Node, test_seed: int, policy: Callable, use_dict: bool, cha
 		usage[ch_name + "_ratio"] = float(channel_counts[ch_name]) / denom
 	out["test_input_usage"] = usage
 	return out
+
+# ── helpers ──
 
 func _get_input_channel_names(game: Node) -> Array[String]:
 	var fallback: Array[String] = ["action_a", "action_b", "action_c"]
@@ -249,6 +327,8 @@ func _result_summary(result: Dictionary) -> Dictionary:
 		"test_input_usage": result.get("test_input_usage", {}).duplicate(true),
 	}
 
+# ── statistics ──
+
 func _calc_ratio(explore_score: int, mono_max: int) -> float:
 	if mono_max > 0:
 		return float(explore_score) / float(mono_max)
@@ -256,11 +336,34 @@ func _calc_ratio(explore_score: int, mono_max: int) -> float:
 		return 9.9
 	return 0.0
 
+func _calc_mean(scores: Array) -> float:
+	if scores.is_empty():
+		return 0.0
+	var total := 0.0
+	for s in scores:
+		total += float(s)
+	return total / float(scores.size())
+
+func _calc_stddev(scores: Array) -> float:
+	if scores.size() < 2:
+		return 0.0
+	var mean := _calc_mean(scores)
+	var sum_sq := 0.0
+	for s in scores:
+		var diff := float(s) - mean
+		sum_sq += diff * diff
+	return sqrt(sum_sq / float(scores.size()))
+
+# ── validation & reporting ──
+
 func _validate_report_schema(report: Dictionary) -> bool:
 	var required := [
 		"monotonous.max_score",
+		"periodic.max_score",
 		"exploratory.best.score",
+		"exploratory.score_stddev",
 		"exploratory_ratio",
+		"periodic_resistance",
 		"telemetry.death_analysis",
 		"telemetry.spawn_analysis",
 		"telemetry.scoring_analysis",
@@ -295,9 +398,12 @@ func _update_improvement_reports(report: Dictionary) -> void:
 	var snapshot := {
 		"timestamp_utc": str(report.get("timestamp_utc", "")),
 		"exploratory_ratio": float(report.get("exploratory_ratio", 0.0)),
+		"periodic_resistance": float(report.get("periodic_resistance", 0.0)),
+		"score_cv": float(report.get("exploratory", {}).get("score_cv", 0.0)),
 		"monotonous_max_score": int(report.get("monotonous", {}).get("max_score", 0)),
+		"periodic_max_score": int(report.get("periodic", {}).get("max_score", 0)),
 		"exploratory_best_score": int(report.get("exploratory", {}).get("best", {}).get("score", 0)),
-		"status": _status_from_ratio(float(report.get("exploratory_ratio", 0.0))),
+		"status": _status_from_metrics(report),
 	}
 	history.append(snapshot)
 	while history.size() > IMPROVEMENT_HISTORY_LIMIT:
@@ -307,15 +413,18 @@ func _update_improvement_reports(report: Dictionary) -> void:
 	var lines: Array[String] = []
 	lines.append("# Improvement Report")
 	lines.append("")
-	lines.append("| Run | Timestamp (UTC) | Exploratory Ratio | Monotonous Max | Exploratory Best | Status |")
-	lines.append("| :-- | :-------------- | ----------------: | -------------: | ---------------: | :----- |")
+	lines.append("| Run | Timestamp (UTC) | Expl. Ratio | Periodic Resist. | Score CV | Mono Max | Periodic Max | Expl. Best | Status |")
+	lines.append("| :-- | :-------------- | ----------: | ---------------: | -------: | -------: | -----------: | ---------: | :----- |")
 	for i in range(history.size()):
 		var h := history[i] as Dictionary
-		lines.append("| %d | %s | %.2f | %d | %d | %s |" % [
+		lines.append("| %d | %s | %.2f | %.2f | %.3f | %d | %d | %d | %s |" % [
 			i + 1,
 			str(h.get("timestamp_utc", "-")),
 			float(h.get("exploratory_ratio", 0.0)),
+			float(h.get("periodic_resistance", 0.0)),
+			float(h.get("score_cv", 0.0)),
 			int(h.get("monotonous_max_score", 0)),
+			int(h.get("periodic_max_score", 0)),
 			int(h.get("exploratory_best_score", 0)),
 			str(h.get("status", "-")),
 		])
@@ -338,10 +447,15 @@ func _load_improvement_history() -> Array:
 	var history: Variant = data.get("history", [])
 	return history if typeof(history) == TYPE_ARRAY else []
 
-func _status_from_ratio(ratio: float) -> String:
-	if ratio <= 1.0:
+func _status_from_metrics(report: Dictionary) -> String:
+	var expl_ratio := float(report.get("exploratory_ratio", 0.0))
+	var periodic_res := float(report.get("periodic_resistance", 0.0))
+	var cv := float(report.get("exploratory", {}).get("score_cv", 0.0))
+	if expl_ratio <= 1.0 or periodic_res <= 1.5:
 		return "fail"
-	if ratio <= 1.5:
+	if expl_ratio <= 1.5 or periodic_res <= 3.0 or cv < 0.1:
+		return "needs_improvement"
+	if cv < 0.3:
 		return "needs_improvement"
 	return "pass"
 

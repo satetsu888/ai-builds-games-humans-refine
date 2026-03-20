@@ -376,17 +376,25 @@ godot --headless --path "$PROJECT_DIR" --script res://tools/tests/run_tests.gd 2
 If you create `run_tests.gd`, include at least:
 
 - Monotonous input tests (`no_input` / `spam_action` / `hold_action`)
-- Exploratory input tests (random or heuristic, multiple trials)
+- Periodic input tests: fixed hold/release cycles at multiple intervals (e.g., 30, 60, 90, 120, 180 frame periods). These detect whether a simple repeating rhythm can achieve high scores.
+- Exploratory input tests (random or heuristic, multiple trials across multiple seeds)
 - Output of `exploratory.best.score` and `monotonous.max_score`
 - Output `logs/test.json` on every run with required minimum fields:
   - `monotonous.max_score`
+  - `periodic.max_score` (highest score across all periodic cycle tests)
   - `exploratory.best.score`
+  - `exploratory.score_stddev` (standard deviation of exploratory scores across all seeds/variants)
   - `exploratory_ratio`
+  - `periodic_resistance` (`exploratory.best.score / periodic.max_score` — how much better context-aware play is vs best fixed rhythm)
   - `telemetry.death_analysis / spawn_analysis / scoring_analysis / input_analysis`
 - Treat missing required fields as test failure
 - Auto-update `logs/improvement_report.md` for improvement-history comparison
 
-### 6b: Mechanics Evaluation (Exploratory Ratio)
+### 6b: Mechanics Evaluation
+
+Three metrics are used together. All three must pass for a game to be considered mechanically sound.
+
+#### (1) Exploratory Ratio
 
 ```text
 exploratory_ratio = exploratory.best.score / monotonous.max_score
@@ -398,7 +406,37 @@ exploratory_ratio = exploratory.best.score / monotonous.max_score
 | 1.0 - 1.5         | Needs work  | Skill reflection is insufficient           |
 | > 1.5             | Pass        | Better play is rewarded                    |
 
-Exploratory ratio is necessary but not sufficient. KPI gains with degraded experience are rejected.
+#### (2) Periodic Resistance
+
+```text
+periodic_resistance = exploratory.best.score / periodic.max_score
+```
+
+Tests whether a fixed hold/release rhythm (at any interval) can match context-aware play. Fixed-rhythm strategies are a specific failure mode: the player discovers a single timing pattern and repeats it indefinitely, producing good scores without reading the game state.
+
+| Periodic Resistance | Evaluation  | Meaning                                        |
+| :------------------ | :---------- | :--------------------------------------------- |
+| <= 1.5              | Fail        | A fixed rhythm scores nearly as well as adaptive play |
+| 1.5 - 3.0           | Needs work  | Some advantage to reading the game, but rhythm is competitive |
+| > 3.0               | Pass        | Fixed rhythms cannot compete with context-aware input |
+
+#### (3) Exploratory Score Variance
+
+```text
+exploratory.score_stddev = stddev of all exploratory trial scores
+```
+
+Measures whether the game produces varied outcomes from varied input. High variance means context matters — the same strategy yields different results depending on game state (spawn positions, entity configurations). Low variance suggests the game is deterministic or insensitive to timing.
+
+| Score Stddev (relative to mean) | Evaluation  | Meaning                                        |
+| :------------------------------ | :---------- | :--------------------------------------------- |
+| CV < 0.1                        | Fail        | Outcomes are nearly identical regardless of context |
+| CV 0.1 - 0.3                    | Needs work  | Some variation but game state has limited impact |
+| CV > 0.3                        | Pass        | Game state significantly affects outcomes        |
+
+(CV = coefficient of variation = stddev / mean)
+
+All three metrics are necessary but not sufficient. KPI gains with degraded experience are rejected.
 
 Check:
 
@@ -407,6 +445,8 @@ Check:
 - [ ] Difficulty increases over time
 - [ ] Button-mashing/idle is not optimal
 - [ ] Skillful play is rewarded
+- [ ] No fixed hold/release cycle achieves a top score (periodic resistance)
+- [ ] Exploratory scores show meaningful variance across seeds (context-dependence)
 - [ ] For each action button, spam policy scores less than timing-aware policy (context-dependent actions)
 - [ ] At least one superlinear scoring mechanism produces observable score acceleration in test results
 - [ ] For each added state variable, non-HUD in-world causality is implemented in code

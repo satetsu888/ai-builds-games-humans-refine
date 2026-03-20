@@ -268,6 +268,32 @@ For each action button (beyond movement), the best and worst moments to press it
 - Run-to-run variation: <what makes each attempt feel different>
 ```
 
+### (8) Periodic Rhythm Resistance
+
+- Principle: No fixed hold/release cycle at any interval should produce a competitive score. If a player can discover a single timing pattern (e.g., "hold 1.5 seconds, release 0.5 seconds, repeat") and achieve high scores by repeating it indefinitely, the game lacks genuine context-dependence. The game world must change in ways that invalidate any fixed rhythm.
+- Design approach:
+  - **Non-periodic world events**: Ensure spawns, hazard movements, or environmental changes are not synchronized to any player-accessible clock. Use randomized intervals, position-dependent triggers, or difficulty-driven phase shifts.
+  - **Accumulating consequences**: A fixed rhythm should cause progressive degradation — either the game state worsens (enemies cluster, resources deplete) or scoring opportunities diminish over time.
+  - **State-reading requirement**: The optimal moment to act should depend on observable game state (enemy positions, resource levels, spatial configuration), not on elapsed time alone.
+- Test: Try multiple fixed hold/release cycles (periods 0.5s, 1s, 1.5s, 2s, 3s). None should score within 33% of the best context-aware score.
+- Evaluation:
+  - Does any fixed-rhythm input pattern achieve a top score?
+  - Does the game world change in ways that reward or punish the same action differently at different moments?
+  - Must the player observe the screen to decide when to act, or can they play by internal clock alone?
+
+### (9) Outcome Variance (Context-Dependence)
+
+- Principle: The same input strategy applied across different game seeds should produce meaningfully different scores. High variance proves that game state (spawn positions, entity configurations, timing of events) determines outcomes — meaning the player must read and react to the specific situation rather than executing a memorized plan.
+- Design approach:
+  - **Seed-sensitive world generation**: Randomize spawn timing, positions, and entity types so each run presents different tactical situations.
+  - **Emergent interactions**: Design mechanics where entity-entity interactions create unpredictable configurations the player must respond to.
+  - **Position-dependent scoring**: Make score opportunities depend on spatial relationships that change each run (e.g., cluster positions, gap openings).
+- Test: Run the same input policy across 8+ different seeds. The coefficient of variation (stddev/mean) of scores should be > 0.3.
+- Evaluation:
+  - Do different seeds produce meaningfully different scores for the same strategy?
+  - Are there runs where a strategy works well and runs where it fails, based on game state?
+  - Would watching two different runs of the same strategy look visually different?
+
 ## 10. Design Quality Checklist
 
 Confirm the following before completing design.
@@ -275,7 +301,7 @@ Confirm the following before completing design.
 - [ ] Is the input scheme within the `button_types` limit chosen in Phase 1?
 - [ ] Is the game over condition single and visually obvious?
 - [ ] Is button mashing/idle play not the optimal solution?
-- [ ] Can you provide reasoned answers to all 7 principles in §2?
+- [ ] Can you provide reasoned answers to all 9 principles in §2?
 - [ ] Did ideas start from tags and have elements beyond existing patterns?
 - [ ] Are there moments of feeling "I've never seen this before"?
 - [ ] If state variables are used, is each one justified by a distinct decision purpose?
@@ -288,6 +314,8 @@ Confirm the following before completing design.
 - [ ] Would "press as often as possible" perform worse than "press at the right moments" for each action?
 - [ ] Is there at least one scoring mechanism where reward grows faster than linearly with consecutive successes?
 - [ ] Can a strategic player score ≥5× more than a player who acts skillfully but without deliberate setup?
+- [ ] Does no fixed hold/release rhythm achieve a competitive score? (periodic resistance)
+- [ ] Does the same strategy produce meaningfully different scores across different seeds? (outcome variance)
 
 ## Appendix: SCAMPER Method (Auxiliary Technique)
 
