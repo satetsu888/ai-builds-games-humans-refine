@@ -1,16 +1,19 @@
 #!/usr/bin/env node
 /**
- * Random Tag Selector for Mini-Game Generation
+ * Grouped Mechanism Tag Selector for Mini-Game Generation
  *
- * Randomly selects tags from a CSV file and outputs them as "seeds" for game design.
- * Used for visual_tags.csv and structure_tags.csv.
+ * Selects mechanism tags from 4 group files with specified counts.
+ *
+ * Groups:
+ *   player  (1 tag)  — data/tags/mechanism_player_tags.csv
+ *   action  (2 tags) — data/tags/mechanism_action_tags.csv
+ *   ability (1 tag)  — data/tags/mechanism_ability_tags.csv
+ *   context (2 tags) — data/tags/mechanism_context_tags.csv
  *
  * Usage:
- *   node scripts/random_tag_selector.js [options]
+ *   node scripts/random_mechanism_selector.js [options]
  *
  * Options:
- *   --file <path>          CSV file to select from (default: data/tags/visual_tags.csv)
- *   -n, --count <number>   Number of tags to select (default: 1)
  *   -s, --seed <number>    Random seed (uses current time if omitted)
  *   -f, --format <type>    Output format: text, json, markdown (default: markdown)
  *   -h, --help             Show help
@@ -19,7 +22,14 @@
 const fs = require("fs");
 const path = require("path");
 
-// Xorshift128 PRNG (for reproducibility)
+const GROUPS = [
+  { name: "player", file: "data/tags/mechanism_player_tags.csv", count: 1 },
+  { name: "action", file: "data/tags/mechanism_action_tags.csv", count: 2 },
+  { name: "ability", file: "data/tags/mechanism_ability_tags.csv", count: 1 },
+  { name: "context", file: "data/tags/mechanism_context_tags.csv", count: 2 },
+];
+
+// Xorshift128 PRNG (same as random_tag_selector.js for seed compatibility)
 class Xorshift128 {
   constructor(seed = Date.now()) {
     this.x = seed >>> 0;
@@ -52,7 +62,6 @@ class Xorshift128 {
   }
 }
 
-// CSV parse (handles quoted fields)
 function parseCSV(content) {
   const lines = content.trim().split("\n");
   return lines.slice(1).map((line) => {
@@ -82,7 +91,6 @@ function parseCSV(content) {
   });
 }
 
-// Load tags from specified CSV file
 function loadTags(filePath) {
   const resolved = path.isAbsolute(filePath)
     ? filePath
@@ -93,17 +101,18 @@ function loadTags(filePath) {
     process.exit(1);
   }
 
-  const content = fs.readFileSync(resolved, "utf-8");
-  return parseCSV(content);
+  return parseCSV(fs.readFileSync(resolved, "utf-8"));
 }
 
-// Select tags
-function selectTags(tags, count, rng) {
-  const shuffled = rng.shuffle(tags);
-  return shuffled.slice(0, count);
+function selectFromGroups(groups, tagsByGroup, rng) {
+  const result = [];
+  for (const group of groups) {
+    const shuffled = rng.shuffle(tagsByGroup[group.name]);
+    result.push(...shuffled.slice(0, group.count));
+  }
+  return result;
 }
 
-// Extract category
 function getCategory(name) {
   const parts = name.split("-");
   if (parts[0] === "on") {
@@ -112,45 +121,14 @@ function getCategory(name) {
   return parts[0];
 }
 
-// Detect tag type from file name
-function getTagType(filePath) {
-  const basename = path.basename(filePath, ".csv");
-  if (basename.includes("visual")) return "visual";
-  if (basename.includes("mechanism")) return "mechanism";
-  if (basename.includes("structure")) return "structure";
-  return "unknown";
-}
-
-// Guide reference by tag type
-function getGuideReference(tagType) {
-  switch (tagType) {
-    case "mechanism":
-      return "guides/mini-game-design-guide.md §7";
-    case "visual":
-      return "guides/visual-design-guide.md §5";
-    case "structure":
-      return "AGENTS.md Phase 2 (Growth skeleton / game structure)";
-    default:
-      return "the relevant design guide";
-  }
-}
-
-// Output formatting
-function formatOutput(selectedTags, seed, format, tagType) {
-  const guideRef = getGuideReference(tagType);
-  const typeLabel =
-    tagType === "visual"
-      ? "Visual Tags"
-      : tagType === "structure"
-      ? "Structure Tags"
-      : "Mechanism Tags";
-
+function formatOutput(selectedTags, seed, format, groupResults) {
   switch (format) {
     case "json":
       return JSON.stringify(
         {
           seed,
-          type: tagType,
+          type: "mechanism",
+          groups: groupResults,
           tags: selectedTags.map((t) => ({
             name: t.name,
             category: getCategory(t.name),
@@ -169,23 +147,27 @@ function formatOutput(selectedTags, seed, format, tagType) {
         .join("\n");
 
     case "markdown":
-    default:
+    default: {
       const lines = [
-        `## Selected ${typeLabel}`,
+        "## Selected Mechanism Tags (Grouped)",
         "",
         `**Seed**: ${seed}`,
         "",
-        "| Tag | Category | Overview | Description |",
-        "|:---|:---|:---|:---|",
       ];
 
-      selectedTags.forEach((t) => {
-        lines.push(
-          `| \`${t.name}\` | ${getCategory(t.name)} | ${t.overview} | ${t.description} |`
-        );
-      });
+      for (const gr of groupResults) {
+        lines.push(`### ${gr.group} (${gr.tags.length} selected)`);
+        lines.push("");
+        lines.push("| Tag | Category | Overview | Description |");
+        lines.push("|:---|:---|:---|:---|");
+        for (const t of gr.tags) {
+          lines.push(
+            `| \`${t.name}\` | ${getCategory(t.name)} | ${t.overview} | ${t.description} |`
+          );
+        }
+        lines.push("");
+      }
 
-      lines.push("");
       lines.push("### Keywords");
       lines.push("");
       selectedTags.forEach((t) => {
@@ -199,41 +181,42 @@ function formatOutput(selectedTags, seed, format, tagType) {
       lines.push(
         "Use the above tags as inspiration starting points for game design,"
       );
-      lines.push(`following the procedures in ${guideRef}.`);
+      lines.push("following the procedures in guides/mini-game-design-guide.md §7.");
       lines.push("Tags are stimuli, not constraints. Don't be afraid to deviate.");
       lines.push("```");
 
       return lines.join("\n");
+    }
   }
 }
 
-// Show help
 function showHelp() {
   console.log(`
-Random Tag Selector - Tag selection tool for mini-game generation
+Grouped Mechanism Tag Selector - Selects mechanism tags from 4 groups
+
+Groups:
+  player  (1 tag)  — data/tags/mechanism_player_tags.csv
+  action  (2 tags) — data/tags/mechanism_action_tags.csv
+  ability (1 tag)  — data/tags/mechanism_ability_tags.csv
+  context (2 tags) — data/tags/mechanism_context_tags.csv
 
 Usage:
-  node scripts/random_tag_selector.js [options]
+  node scripts/random_mechanism_selector.js [options]
 
 Options:
-  --file <path>          CSV file to select from (default: data/tags/visual_tags.csv)
-  -n, --count <number>   Number of tags to select (default: 1)
   -s, --seed <number>    Random seed (uses current time if omitted)
   -f, --format <type>    Output format: text, json, markdown (default: markdown)
   -h, --help             Show this help
 
 Examples:
-  node scripts/random_tag_selector.js --file data/tags/visual_tags.csv -n 1
-  node scripts/random_tag_selector.js --file data/tags/structure_tags.csv -n 1 -s 42
-  node scripts/random_tag_selector.js --file data/tags/visual_tags.csv -n 1 -f json
+  node scripts/random_mechanism_selector.js
+  node scripts/random_mechanism_selector.js -s 42
+  node scripts/random_mechanism_selector.js -s 42 -f json
 `);
 }
 
-// Parse arguments
 function parseArgs(args) {
   const options = {
-    file: "data/tags/visual_tags.csv",
-    count: 1,
     seed: Date.now(),
     format: "markdown",
   };
@@ -241,13 +224,6 @@ function parseArgs(args) {
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     switch (arg) {
-      case "--file":
-        options.file = args[++i];
-        break;
-      case "-n":
-      case "--count":
-        options.count = parseInt(args[++i], 10);
-        break;
       case "-s":
       case "--seed":
         options.seed = parseInt(args[++i], 10);
@@ -266,26 +242,35 @@ function parseArgs(args) {
   return options;
 }
 
-// Main
 function main() {
   const options = parseArgs(process.argv.slice(2));
-
-  if (options.count < 1 || options.count > 10) {
-    console.error("Error: count must be between 1 and 10");
-    process.exit(1);
-  }
 
   if (!["text", "json", "markdown"].includes(options.format)) {
     console.error("Error: format must be text, json, or markdown");
     process.exit(1);
   }
 
-  const tags = loadTags(options.file);
-  const tagType = getTagType(options.file);
-  const rng = new Xorshift128(options.seed);
-  const selected = selectTags(tags, options.count, rng);
+  // Load all group tag files
+  const tagsByGroup = {};
+  for (const group of GROUPS) {
+    tagsByGroup[group.name] = loadTags(group.file);
+  }
 
-  console.log(formatOutput(selected, options.seed, options.format, tagType));
+  const rng = new Xorshift128(options.seed);
+  const allSelected = selectFromGroups(GROUPS, tagsByGroup, rng);
+
+  // Build group results for formatted output
+  const groupResults = [];
+  let offset = 0;
+  for (const group of GROUPS) {
+    groupResults.push({
+      group: group.name,
+      tags: allSelected.slice(offset, offset + group.count),
+    });
+    offset += group.count;
+  }
+
+  console.log(formatOutput(allSelected, options.seed, options.format, groupResults));
 }
 
 main();

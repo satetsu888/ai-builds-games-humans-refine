@@ -28,18 +28,26 @@ If you modify the game based on human instructions, you must run through Web exp
 
 ## Phase 1: Tag Selection
 
-Randomly select 3 mechanic tags, 2 visual tags, and 1 structure tag.
-Mechanic tags must satisfy at least one non-obvious pair based on `data/tags/obvious_pairs.json`.
+Select mechanic tags from 4 groups (6 total), 1 visual tag, and 1 structure tag.
 Also choose a random integer `button_types` from `1-5`.
 
+Mechanic tag groups:
+
+| Group | File | Pick |
+| :--- | :--- | :--- |
+| player | `data/tags/mechanism_player_tags.csv` | 1 |
+| action | `data/tags/mechanism_action_tags.csv` (on_pressed / on_holding / on_released) | 2 |
+| ability | `data/tags/mechanism_ability_tags.csv` | 1 |
+| context | `data/tags/mechanism_context_tags.csv` (obstacle / field / rule / on_got_item) | 2 |
+
 ```bash
-node scripts/random_tag_selector.js --file data/tags/mechanism_tags.csv -n 3 --require-unexpected-pair --obvious-pairs data/tags/obvious_pairs.json
-node scripts/random_tag_selector.js --file data/tags/visual_tags.csv -n 2
+node scripts/random_mechanism_selector.js
+node scripts/random_tag_selector.js --file data/tags/visual_tags.csv -n 1
 node scripts/random_tag_selector.js --file data/tags/structure_tags.csv -n 1
 node -e "console.log(Math.floor(Math.random() * 5) + 1)"  # button_types (1-5)
 ```
 
-To reproduce with the same seed, add `-s <number>`.
+To reproduce with the same seed, add `-s <number>` to each command.
 If `button_types` must also be reproducible, use the same `-s <number>` and a seeded random call in `node` to generate the same value.
 
 **How to treat tags**: Tags are creative seeds, not strict specs. Use contradictory tags as creative tension. Do not fear divergence.
@@ -47,9 +55,8 @@ If `button_types` must also be reproducible, use the same `-s <number>` and a se
 **Minimum validation**:
 
 - [ ] Selected 1 structure tag from `data/tags/structure_tags.csv`
-- [ ] Recorded `mechanism 3 + visual 2 + structure 1` in `README.md`
+- [ ] Recorded `mechanism 6 (player 1 + action 2 + ability 1 + context 2) + visual 1 + structure 1` in `README.md`
 - [ ] Recorded `button_types: <1-5>` in `README.md`
-- [ ] Satisfied `non-obvious pair >= 1` under `data/tags/obvious_pairs.json`
 
 ---
 
@@ -590,11 +597,14 @@ If implementation occurs in Phase 8, update this report using re-run Phase 6 res
 
 ### Mechanics Tags
 
-- tag1, tag2, tag3
+- player: tag1
+- action: tag2, tag3
+- ability: tag4
+- context: tag5, tag6
 
 ### Visual Tags
 
-- vtag1, vtag2
+- vtag1
 
 ### Structure Tags
 
@@ -629,11 +639,14 @@ Note: Visual/sound/AI-genericness evaluations are added only if Phase 8 is execu
 
 | File                                        | Purpose                                       | Referenced Phase |
 | :------------------------------------------ | :-------------------------------------------- | :--------------- |
-| `data/tags/mechanism_tags.csv`              | Mechanics tags (107 tags)                     | Phase 1          |
+| `data/tags/mechanism_player_tags.csv`       | Player group tags (15 tags)                   | Phase 1          |
+| `data/tags/mechanism_action_tags.csv`       | Action group tags (28 tags: on_pressed/on_holding/on_released) | Phase 1 |
+| `data/tags/mechanism_ability_tags.csv`      | Ability group tags (15 tags)                  | Phase 1          |
+| `data/tags/mechanism_context_tags.csv`      | Context group tags (49 tags: obstacle/field/rule/on_got_item) | Phase 1 |
 | `data/tags/visual_tags.csv`                 | Visual tags (54 tags)                         | Phase 1          |
 | `data/tags/structure_tags.csv`              | Structure tags (game skeleton)                | Phase 1          |
-| `data/tags/obvious_pairs.json`              | Obvious-pair definitions (non-obvious check)  | Phase 1          |
-| `scripts/random_tag_selector.js`            | Tag selection script                          | Phase 1          |
+| `scripts/random_tag_selector.js`            | Single-file tag selection script              | Phase 1          |
+| `scripts/random_mechanism_selector.js`      | Grouped mechanism tag selection script        | Phase 1          |
 | `guides/mini-game-design-guide.md`          | Mechanics design guide                        | Phase 2          |
 | `guides/visual-design-guide.md`             | Visual design guide                           | Phase 3          |
 | `guides/typography-implementation-guide.md` | Typography exploration/implementation/license | Phase 5/8        |
