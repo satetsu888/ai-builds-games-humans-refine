@@ -10,12 +10,12 @@ Index:
 
 ## 0. Tag Record
 
-- Mechanism (3): `#rule-match`, `#weapon-change_field`, `#on_pressed-change_field`
+- Mechanism (3): `#rule-match`, `#ability-reshape` (was `#weapon-change_field`), `#on_pressed-change_field`
 - Visual (2): `#typography-objectification`, `#analog-chromatic-offset`
 - Structure (1): `#structure-chain_reaction`
 - Seed: `20260306`
 - button_types: `3`
-- Unexpected pair check: `rule-match + weapon-change_field` is not in `data/tags/obvious_pairs.json`
+- Unexpected pair check: `rule-match + ability-reshape` is not in `data/tags/obvious_pairs.json`
 
 ## 0.5 State Model (minimal)
 
@@ -64,7 +64,7 @@ The player is a proofreader riding a rising landscape of letter-slabs above a vo
 ## 4. Relationship with Tags
 
 - `rule-match`: only matching glyph groups collapse, and falling debris keeps re-evaluating that rule.
-- `weapon-change_field`: the pulse rewrites traversable terrain instead of attacking enemies.
+- `ability-reshape`: the pulse rewrites traversable terrain, altering the environment structure.
 - `on_pressed-change_field`: field change is immediate on button press, not on passive timers.
 - `typography-objectification`: letters are literal platforms and hazards, not UI decoration.
 - `analog-chromatic-offset`: pulses and pressure use restrained RGB splitting to imply print misregistration.
@@ -102,7 +102,7 @@ This differs from match puzzle descendants because matching is performed by loco
 
 ### Mechanics Tags
 
-- rule-match, weapon-change_field, on_pressed-change_field
+- rule-match, ability-reshape, on_pressed-change_field
 
 ### Visual Tags
 

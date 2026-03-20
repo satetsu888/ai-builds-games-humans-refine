@@ -112,7 +112,7 @@ Apply these to **all objects** (player, enemies, obstacles, items), not just the
 | Mechanism Tag | Visual Tag | Combined Effect |
 |:---|:---|:---|
 | `player-rotate` | `motionviz-velocity-hue-shift` | Color shifts with rotation speed — faster = warmer hue |
-| `weapon-ray` | `render-glow-outline` | Laser rendered as bright emissive line with bloom halo |
+| `ability-instant_line` | `render-glow-outline` | Line of influence rendered as bright emissive line with bloom halo |
 | `obstacle-chase` | `motionviz-afterimage-trail` | Pursuing enemies leave ghost trails showing trajectory |
 | `on_holding-charge` | `motionviz-energy-glow-build` | Held button builds visible glow around player |
 | `field-auto_scroll` | `background-flow-lines` | Scrolling direction visualized by flowing streamlines |
