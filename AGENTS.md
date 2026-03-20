@@ -89,9 +89,9 @@ Every cause-and-effect rule must be explainable as a one-sentence physical analo
 
 For each mechanic, write a **causal sentence** in the format: "When [action], [consequence] because [physical reason]."
 
-- **Pass**: "When you break a crystal, shards fly outward because that's how fragmentation works."
+- **Pass**: "When you push an object off a ledge, it falls and smashes what's below because gravity pulls things down."
 - **Pass**: "When you hold the button, the character charges and glows because energy visibly accumulates."
-- **Fail**: "When you break a crystal, a zone appears that later spawns mutated entities." (Requires learning an arbitrary rule — no physical intuition connects action to delayed consequence.)
+- **Fail**: "When you touch a pillar, a zone appears that later spawns mutated entities." (Requires learning an arbitrary rule — no physical intuition connects action to delayed consequence.)
 
 If a causal sentence requires abstract intermediary concepts (zones, invisible states, delayed triggers, parameters), redesign the mechanic:
 
@@ -171,7 +171,7 @@ Does the game create moments where the player forms an expectation and then has 
 Can the player feel "I'm getting better at this"?
 
 - Define what separates a beginner, intermediate, and expert player in concrete behavioral terms (not score numbers).
-- Example: "Beginner holds inhale until hit. Intermediate releases before shards arrive. Expert times inhale windows around shard spawn patterns."
+- Example: "Beginner dodges reactively. Intermediate anticipates patterns and positions early. Expert baits hazards into favorable formations before countering."
 
 #### (3) Meaningful Choices
 

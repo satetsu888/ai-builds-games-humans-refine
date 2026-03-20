@@ -35,7 +35,7 @@ A guide for designing the visual layer of action mini-games using visual tags as
 
 - Principle: Every cause-and-effect relationship in the game mechanics must have a corresponding visual expression that makes the causal chain self-evident. If a mechanic creates a consequence, the visual design must show WHY that consequence follows from the action — through spatial proximity, physical motion, material transformation, or other visually intuitive cues. The goal is that the player never needs to read a rule; they can see the causality.
 - Design approach:
-  - **Spatial continuity**: Consequences appear at or near the location of the action, not at a distance. If breaking a crystal produces fragments, the fragments emerge from the crystal, not from an abstract zone elsewhere.
+  - **Spatial continuity**: Consequences appear at or near the location of the action, not at a distance. If an impact produces debris, the debris emerges from the point of contact, not from an abstract zone elsewhere.
   - **Material continuity**: The visual appearance of a consequence should resemble a transformed version of its cause. Shattered objects look like pieces of the original. Grown objects look like extensions of their source.
   - **Temporal immediacy**: The consequence should follow the action with minimal delay. If delay is mechanically necessary, a visual "bridge" (a growing glow, an expanding wave, a traveling projectile) must connect the action moment to the consequence moment.
   - **Motion logic**: The direction, speed, and trajectory of consequences should follow from the physics of the action. An explosion pushes things outward. A pull draws things inward. Gravity pulls downward. Breaking scatters.
@@ -465,7 +465,7 @@ Visuals must serve readability and feedback, not just aesthetics.
 
 ```
 Action happens at location A, consequence appears at location B with no visual link.
-"Break a crystal here → a zone appears → later, different entities spawn from that zone."
+"Activate a switch here → a zone appears → later, different entities spawn from that zone."
 The player cannot predict or understand this chain from visuals alone.
 Every consequence must visually emerge from its cause: same location, similar material, connected motion.
 ```

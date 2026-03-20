@@ -37,8 +37,8 @@ Integrate "principles (what to do)" and "evaluation (confirmation items)" to cla
 ### (5) Causal Intuition
 
 - Principle: Every cause-and-effect rule in the game should map to a physical or spatial intuition that humans already possess. If a mechanic requires an abstract intermediary concept (zones, invisible states, delayed triggers) to explain the connection between action and result, redesign the causal chain so the connection is self-evident.
-- Good causal chain: action → immediate visible consequence that shares physical logic with the action. "Break a crystal → shards fly outward" (physical fragmentation). "Push an object → it slides and hits others" (momentum transfer). "Hold a button → character charges and glows" (accumulation is visible).
-- Bad causal chain: action → invisible state change → delayed/unrelated consequence. "Break a crystal → a zone is created → later, mutated crystals spawn from that zone" (requires learning an arbitrary rule).
+- Good causal chain: action → immediate visible consequence that shares physical logic with the action. "Push an object → it slides and hits others" (momentum transfer). "Hold a button → character charges and glows" (accumulation is visible). "Ignite a fuse → flame travels along the rope → barrel explodes" (fire propagation).
+- Bad causal chain: action → invisible state change → delayed/unrelated consequence. "Touch a pillar → a zone is created → later, mutated entities spawn from that zone" (requires learning an arbitrary rule).
 - Test: Can each rule be stated as a single-sentence physical analogy without using game-specific jargon (zone, gauge, state, phase)?
 - Evaluation:
   - Can a first-time player predict what will happen before it happens, based on visual cues alone?
