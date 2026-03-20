@@ -177,6 +177,27 @@ Notes:
 ## 5. Basis for Novelty
 
 <Elements beyond existing patterns, and how this game differs from the most similar existing game(s)>
+
+## 6. Engagement Design
+
+### 6.1 Prediction & Surprise
+<Situations where the same input produces different outcomes depending on context>
+
+### 6.2 Mastery Curve
+- Beginner: <concrete behavior>
+- Intermediate: <concrete behavior>
+- Expert: <concrete behavior>
+
+### 6.3 Meaningful Choices
+- Decision point 1: <situation, options, and tradeoffs>
+- Decision point 2: <situation, options, and tradeoffs>
+
+### 6.4 Tension Rhythm
+<Expected tension curve over a 30-second window: what creates peaks and valleys>
+
+### 6.5 Replay Motivation
+- "If only I had...": <the realization players have after game over>
+- Run-to-run variation: <what makes each attempt feel different>
 ```
 
 ## 10. Design Quality Checklist

@@ -62,15 +62,67 @@ Design game rules using mechanic tags as seeds.
 1. Free-association and deliberate deviation from tags
 2. Define the core experience in one sentence
 3. Design controls (within `button_types` chosen in Phase 1)
-4. Validate via checklist (`guides/mini-game-design-guide.md` §10)
+4. Design player engagement (see Engagement Design below)
+5. Validate via checklist (`guides/mini-game-design-guide.md` §10 and Engagement checklist below)
 
-**Output**: `tmp/games/<slug>/README.md` (core mechanics, controls, object specs, novelty rationale, tag log, state-variable table, tradeoff explanation)
+**Output**: `tmp/games/<slug>/README.md` (core mechanics, controls, object specs, novelty rationale, tag log, state-variable table, tradeoff explanation, engagement design)
 
 **Visible-Causality Guard (required)**:
 
 - State variables must not exist "just to have a number." Before adding one, explicitly state one new decision that existing rules cannot express.
 - Each state variable must have at least one in-world, non-HUD causal manifestation (terrain/behavior/color/shape/speed/sound).
 - If expressible with existing state, prefer integration (state reduction) over adding new state.
+
+### Engagement Design (required)
+
+Mechanics alone do not make a game worth playing. Before finalizing design, explicitly define **why the player will want to keep playing**.
+
+The following five elements must each be addressed in `README.md` section `1.7 Engagement Design`. Not every element needs to be strong — but each must be consciously considered and the design decision documented.
+
+#### (1) Prediction & Surprise
+
+Does the game create moments where the player forms an expectation and then has it confirmed or subverted?
+
+- Identify at least one situation where the same input produces different outcomes depending on context.
+- If context-dependence does not exist, document why the mechanics still create surprise (e.g., emergent spatial interactions).
+
+#### (2) Mastery Curve
+
+Can the player feel "I'm getting better at this"?
+
+- Define what separates a beginner, intermediate, and expert player in concrete behavioral terms (not score numbers).
+- Example: "Beginner holds inhale until hit. Intermediate releases before shards arrive. Expert times inhale windows around shard spawn patterns."
+
+#### (3) Meaningful Choices
+
+Are there moments where the player must choose between meaningfully different options?
+
+- List at least two decision points per play session where the player weighs alternatives.
+- Each choice must have both upside and downside — not a dominant option.
+
+#### (4) Tension Rhythm
+
+Does the game alternate between tension and relief?
+
+- Describe the expected tension curve over a 30-second window.
+- Identify what creates the "peaks" (danger approach, resource depletion) and "valleys" (safe window, reward collection).
+- If the game is constant intensity, document why that works for the core experience.
+
+#### (5) Replay Motivation
+
+Why does the player press "retry" after game over?
+
+- Define the "if only I had..." moment: what does the player realize they could have done differently?
+- Describe at least one source of run-to-run variation that makes each attempt feel different (procedural layout, spawn timing, emergent combinations).
+
+### Engagement Design Checklist
+
+- [ ] Section `1.7 Engagement Design` exists in `README.md` with all five elements addressed
+- [ ] At least one context-dependent outcome is documented (Prediction & Surprise)
+- [ ] Beginner/intermediate/expert behaviors are defined in concrete terms (Mastery Curve)
+- [ ] At least two non-trivial decision points are identified (Meaningful Choices)
+- [ ] Tension peaks and relief valleys are described for a 30-second window (Tension Rhythm)
+- [ ] A specific "if only I had..." moment is articulated (Replay Motivation)
 
 ---
 
@@ -277,6 +329,38 @@ Check:
 
 Subjective visual/sound evaluation and UI-hidden comprehension checks are done in Phase 8.
 
+### 6c: Experience Curve Analysis
+
+Beyond the final score, analyze the **temporal shape** of each test run to detect engagement problems that aggregate metrics miss.
+
+Tests should record per-interval snapshots (recommended: every 5 seconds) with at least:
+- Score delta (points gained in this interval)
+- Danger events (shard contacts, near misses, damage taken)
+- Active entity count
+
+From these snapshots, evaluate:
+
+| Pattern | Symptom | Likely Cause |
+| :--- | :--- | :--- |
+| Dead start | Score delta = 0 for the first 10+ seconds | Objects take too long to reach the player; no early engagement |
+| Flat tension | Danger events are uniformly distributed | No difficulty escalation or phase transitions; monotone pacing |
+| Spike death | Death occurs within 2 seconds of first damage | No recovery window; difficulty cliff instead of curve |
+| No peaks | Score delta is constant throughout | No combo/bonus/risk-reward moments; steady drip of points |
+| Front-loaded | All scoring happens in first half, near-zero later | Difficulty increase shuts down scoring rather than shifting it |
+
+Record the experience curve evaluation in `logs/test.json` under `telemetry.experience_curve` and flag detected patterns.
+
+If the design includes a tension rhythm description (Phase 2, §1.7), compare the actual curve shape against the design intent.
+
+### 6d: Engagement Design Verification
+
+Verify each element from the Phase 2 Engagement Design against the implementation:
+
+- [ ] Context-dependent outcomes exist in code (same input, different result based on game state)
+- [ ] Score distributions across test seeds show variance (not all runs score identically)
+- [ ] At least one ability/action is sometimes beneficial and sometimes costly depending on timing
+- [ ] Tension rhythm is observable in the experience curve (not flat)
+
 ---
 
 ## Phase 7: Improvement Evaluation Report
@@ -325,6 +409,18 @@ Per evaluation, choose 2-3 operators and vary combinations across proposals.
 
 Subjective visual/sound improvements are out of Phase 7 scope.
 
+### Engagement Evaluation
+
+In addition to mechanics analysis, evaluate the game against the Phase 2 Engagement Design:
+
+- **Prediction & Surprise**: Do the test results show context-dependent scoring patterns, or is every frame equivalent?
+- **Mastery Curve**: Is there a measurable gap between the worst and best exploratory policies? Does a "smarter" policy consistently outperform?
+- **Meaningful Choices**: Are multiple input channels used in the best-performing policy, or is one channel dominant?
+- **Tension Rhythm**: Does the experience curve (6c) show peaks and valleys, or is it flat?
+- **Replay Motivation**: Do different test seeds produce meaningfully different outcomes (score variance)?
+
+When proposing improvement options, at least one option must target a detected engagement weakness — not only mechanics KPIs.
+
 ### Prohibited
 
 - Numeric tuning only (e.g., `speed *= 0.8`)
@@ -347,6 +443,28 @@ Optional phase where humans view/play Web export and iterate improvements throug
 
 - Complement headless metrics with lived experience quality (feel/readability/sound impression/tempo)
 - Reduce mismatch between design intent and real play experience by incorporating human feedback
+- Validate engagement design hypotheses from Phase 2 through actual play
+
+### Structured Play-Test Protocol
+
+When the human plays the game, the AI should ask for feedback structured around these time-based checkpoints:
+
+#### 5-Second Test (First Impression)
+- Did you understand what to do without reading instructions?
+- Could you distinguish player / threat / reward at a glance?
+- Was there an immediate urge to interact?
+
+#### 30-Second Test (Core Loop)
+- Did you experience at least one "that was close" or "nice!" moment?
+- Did you want to try a different approach after your first failure?
+- Was there a moment where you made a deliberate choice (not just reacting)?
+
+#### 3-Minute Test (Sustained Engagement)
+- At what point, if any, did you feel bored or like "I've seen everything"?
+- Did the game feel different at the end compared to the beginning?
+- After game over, did you want to retry? If yes, what were you hoping to do differently?
+
+Record responses in `logs/improvement_report.md` under "Human Feedback — Play-Test". AI should use these responses to identify gaps between the Phase 2 engagement design and the actual experience, then propose targeted improvements.
 
 ### Minimum Operation Rules
 
