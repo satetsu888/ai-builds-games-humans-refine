@@ -21,13 +21,6 @@ This project is a human-in-the-loop mini-game workshop:
 - Human feedback-driven refinement
 - Iterative quality improvement (design, mechanics, visuals, sound)
 
-## Sample Games
-
-- [Prooffall Cascade](https://abagames.github.io/ai-builds-games-humans-refine/games/prooffall-cascade/build/web/index.html)
-- [Warp Chase Holdline](https://abagames.github.io/ai-builds-games-humans-refine/games/warp-chase-holdline/build/web/index.html)
-- [Polarity Lasso Chain](https://abagames.github.io/ai-builds-games-humans-refine/games/polarity-lasso-chain/build/web/index.html)
-- [Chain Circuit Vault](https://abagames.github.io/ai-builds-games-humans-refine/games/chain_circuit_vault/build/web/index.html)
-
 ## Workflow Overview
 
 `AGENTS.md` defines an 8-phase workflow for generating and refining a mini-game:
