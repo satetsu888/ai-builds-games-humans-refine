@@ -63,8 +63,10 @@ Design game rules using mechanic tags as seeds.
 2. Define the core experience in one sentence
 3. Design controls (within `button_types` chosen in Phase 1)
 4. Causal chain audit (see Causal Intuition Guard below)
-5. Design player engagement (see Engagement Design below)
-6. Validate via checklist (`guides/mini-game-design-guide.md` §10 and Engagement checklist below)
+5. Context-dependent action audit (see Context-Dependent Action Guard below)
+6. Superlinear scoring design (see Superlinear Scoring Guard below)
+7. Design player engagement (see Engagement Design below)
+8. Validate via checklist (`guides/mini-game-design-guide.md` §10 and all Guard/Engagement checklists below)
 
 **Output**: `tmp/games/<slug>/README.md` (core mechanics, controls, object specs, novelty rationale, tag log, state-variable table, tradeoff explanation, engagement design)
 
@@ -98,6 +100,51 @@ Record causal sentences in `README.md` section `1.6 Causal Chain Audit`.
 - [ ] No rule requires abstract jargon (zone, gauge, state, phase) to explain the cause-effect link
 - [ ] Every consequence shares a spatial or physical relationship with its cause
 - [ ] Delayed consequences have a visible bridge connecting action to result
+
+### Context-Dependent Action Guard (required)
+
+Every action button (beyond basic movement) must have situations where pressing it is the right choice AND situations where pressing it is the wrong choice. If an action is always beneficial, it becomes a reflex (button mashing) rather than a decision.
+
+For each action button, document in `README.md` section `1.7 Context-Dependent Action Audit`:
+
+| Action | Best Moment | Worst Moment | Cost of Mistiming |
+| :--- | :--- | :--- | :--- |
+
+- **Pass**: "Launch is best when enemies are clustered (chain reaction). Launch is worst when no targets are nearby (wasted cooldown leaves you unable to fire when a cluster forms)."
+- **Pass**: "Jump is best at platform edges (maximum distance). Jump is worst over spikes (you land on them instead of walking around)."
+- **Fail**: "Attack is always good — it destroys anything it touches with no cooldown or cost." (No reason to ever NOT press it → mashing is optimal.)
+
+If an action has no bad timing, add a cost:
+1. **Cooldown/resource cost**: Action has a recovery period or limited uses, so mistimed use wastes the opportunity.
+2. **Vulnerability window**: Performing the action creates a brief opening where the player is exposed.
+3. **State commitment**: The action changes the game state in a way that forecloses other options temporarily.
+
+### Context-Dependent Action Checklist
+
+- [ ] Every action button has a documented best and worst moment in `README.md` §1.7
+- [ ] For each action, "press as often as possible" would perform worse than "press at the right moments"
+- [ ] The cost of mistiming is observable in-game (not hidden or negligible)
+
+### Superlinear Scoring Guard (required)
+
+The scoring system must include at least one mechanism where reward grows faster than linearly with player skill and setup. This ensures that strategic, multi-step play is dramatically more rewarding than simple correct actions, creating depth beyond basic competence.
+
+Document the superlinear scoring design in `README.md` section `1.8 Superlinear Scoring Design`:
+
+- **Mechanism**: Which pattern — chain multiplier, setup→trigger, condition combo, or threshold bonus
+- **Setup**: What the player must arrange or accumulate
+- **Trigger**: The action that converts setup into a large score
+- **Growth curve**: How score scales (e.g., n², 2^n, n×base)
+
+- **Pass**: "Chain hits score n × base_points for the n-th hit in a chain. A 5-chain scores 1+2+3+4+5 = 15× base, vs 5× base for 5 individual hits." (Triangular growth rewards chaining.)
+- **Pass**: "Letting 4 enemies cluster then hitting them all scores 4² = 16 points, vs 4 × 1 = 4 for individual kills." (Quadratic growth rewards patience.)
+- **Fail**: "Each enemy killed gives 1 point regardless of context." (Linear — no reason to set up anything.)
+
+### Superlinear Scoring Checklist
+
+- [ ] At least one scoring mechanism has documented superlinear growth in `README.md` §1.8
+- [ ] A strategic player can score ≥5× more than a skillful-but-non-strategic player
+- [ ] The setup required for superlinear scoring involves observable risk or opportunity cost
 
 ### Engagement Design (required)
 
@@ -353,6 +400,8 @@ Check:
 - [ ] Difficulty increases over time
 - [ ] Button-mashing/idle is not optimal
 - [ ] Skillful play is rewarded
+- [ ] For each action button, spam policy scores less than timing-aware policy (context-dependent actions)
+- [ ] At least one superlinear scoring mechanism produces observable score acceleration in test results
 - [ ] For each added state variable, non-HUD in-world causality is implemented in code
 
 Subjective visual/sound evaluation and UI-hidden comprehension checks are done in Phase 8.
@@ -380,13 +429,21 @@ Record the experience curve evaluation in `logs/test.json` under `telemetry.expe
 
 If the design includes a tension rhythm description (Phase 2, §1.7), compare the actual curve shape against the design intent.
 
-### 6d: Engagement Design Verification
+### 6d: Action & Scoring Structure Verification
+
+Verify the Context-Dependent Action and Superlinear Scoring guards against the implementation:
+
+- [ ] For each action button, "spam" monotonous policy scores less than a timing-aware exploratory policy
+- [ ] At least one action is sometimes beneficial and sometimes costly depending on game state
+- [ ] Superlinear scoring is functional: compare best exploratory score against a theoretical "linear ceiling" (actions × base_points)
+- [ ] Score variance across exploratory policies is high (strategic policies outscore random-but-active policies)
+
+### 6e: Engagement Design Verification
 
 Verify each element from the Phase 2 Engagement Design against the implementation:
 
 - [ ] Context-dependent outcomes exist in code (same input, different result based on game state)
 - [ ] Score distributions across test seeds show variance (not all runs score identically)
-- [ ] At least one ability/action is sometimes beneficial and sometimes costly depending on timing
 - [ ] Tension rhythm is observable in the experience curve (not flat)
 
 ---
@@ -437,9 +494,19 @@ Per evaluation, choose 2-3 operators and vary combinations across proposals.
 
 Subjective visual/sound improvements are out of Phase 7 scope.
 
+### Action & Scoring Structure Evaluation
+
+Evaluate the Context-Dependent Action and Superlinear Scoring guards:
+
+- **Context-Dependent Actions**: For each action button, does the "spam" monotonous policy score worse than a timing-aware exploratory policy? If spam is competitive, the action lacks sufficient cost for mistiming.
+- **Superlinear Scoring**: Calculate the "strategic multiplier" = best exploratory score / (number of scoring actions × base points). If this is close to 1.0, scoring is linear and there is no reward for multi-step setups.
+- **Score Ceiling Gap**: Compare the best exploratory score against the theoretical maximum under linear scoring. A large gap indicates superlinear scoring is working. A small gap indicates strategic depth is lacking.
+
+When proposing improvement options, at least one option must address a detected action or scoring structure weakness.
+
 ### Engagement Evaluation
 
-In addition to mechanics analysis, evaluate the game against the Phase 2 Engagement Design:
+In addition to mechanics and structure analysis, evaluate the game against the Phase 2 Engagement Design:
 
 - **Prediction & Surprise**: Do the test results show context-dependent scoring patterns, or is every frame equivalent?
 - **Mastery Curve**: Is there a measurable gap between the worst and best exploratory policies? Does a "smarter" policy consistently outperform?

@@ -7,7 +7,7 @@
 - Providing intuitive feedback for player actions.
 - Preventing monotonous operations (button mashing, idle play).
 
-## 2. Five Core Design Principles and Evaluation Criteria
+## 2. Seven Core Design Principles and Evaluation Criteria
 
 Integrate "principles (what to do)" and "evaluation (confirmation items)" to clarify design guidelines.
 
@@ -44,6 +44,33 @@ Integrate "principles (what to do)" and "evaluation (confirmation items)" to cla
   - Can a first-time player predict what will happen before it happens, based on visual cues alone?
   - Does every consequence share a spatial or physical relationship with its cause (proximity, contact, motion direction)?
   - Are there any rules where the player must die once to learn an arbitrary connection?
+
+### (6) Context-Dependent Actions
+
+- Principle: Every action button (beyond basic movement) must have situations where pressing it is beneficial AND situations where pressing it is harmful or wasteful. The player must constantly judge "should I act NOW?" rather than acting whenever possible. If an action is always beneficial regardless of timing or context, it becomes a reflex rather than a decision — leading to button-mashing as the optimal strategy.
+- Design approach:
+  - **Beneficial context**: Define when the action produces the best outcome (e.g., "attack when enemies are clustered," "jump at the edge of a platform," "fire when the target is aligned").
+  - **Costly context**: Define when the action produces a negative outcome or opportunity cost (e.g., "attack on miss creates a vulnerability window," "jumping at the wrong time lands you in danger," "firing depletes limited ammo needed later").
+  - The cost does not need to be symmetric with the benefit — a small cost that occasionally matters is enough to create meaningful timing decisions.
+- Test: For each action button, can you concretely describe both "the best moment to press it" and "the worst moment to press it"?
+- Evaluation:
+  - Does each action button have at least one situation where NOT pressing it is the better choice?
+  - Would a policy of "press this button as often as possible" perform worse than a policy of "press this button at the right moments"?
+  - Can the player learn to read the game state to judge when to act?
+
+### (7) Superlinear Scoring
+
+- Principle: The scoring system must reward deliberate multi-step setups with non-linear score growth. A player who creates specific conditions through a sequence of correct actions should score dramatically more than a player who simply performs individual correct actions. This separates "skilled play" from "strategic play" — the latter should be rewarded with accelerating returns.
+- Patterns (use at least one):
+  - **Chain multiplier**: The n-th success in a chain scores n× (or n²×) base points. Chains break on failure, creating tension between extending the chain and cashing out safely.
+  - **Setup → trigger**: Creating a specific spatial or temporal arrangement, then executing an action on it, yields more than the sum of individual actions. Example: letting enemies cluster, then hitting the cluster for area damage that scores per-enemy × chain-length.
+  - **Condition combo**: Meeting multiple conditions simultaneously multiplies the reward. Example: destroying an enemy while airborne, near a wall, at low HP each add a multiplier.
+  - **Threshold bonus**: Accumulating a resource to a threshold triggers a bonus event. Example: filling a combo meter triggers a score burst, but the meter decays so you must sustain performance.
+- Test: Can a player who understands the scoring system score 5× or more than a player who plays skillfully but without strategic setup?
+- Evaluation:
+  - Is there at least one scoring mechanism where reward grows faster than linearly with consecutive successes?
+  - Does the game create moments where a patient setup yields a dramatically larger score than immediate action?
+  - Can test policies that simulate "strategic patience" (e.g., waiting for conditions, then acting) outscore policies that simply act frequently?
 
 ## 3. Interaction Patterns (Reference)
 
@@ -122,7 +149,9 @@ Design in the following order from given tag groups.
 3. **Core Experience Decision**: Define the "momentary sensation" you want to give the player in one phrase
 4. **Mechanics Construction**: Design input scheme that realizes the core experience
 5. **Causal Chain Audit**: For each rule, write a one-sentence physical analogy. If you cannot, redesign the causal chain (see §2.5)
-6. **Consistency Verification**: Verify design with the checklist in §10
+6. **Context-Dependent Action Audit**: For each action button, describe the best and worst moments to press it. If an action has no bad timing, redesign it to include a cost or opportunity cost (see §2.6)
+7. **Superlinear Scoring Design**: Identify at least one scoring mechanism where reward accelerates with multi-step setups. Document the setup → payoff structure (see §2.7)
+8. **Consistency Verification**: Verify design with the checklist in §10
 
 ※ Use tags as stimulus for steps 1-2, don't be bound by tags from step 3 onwards.
 
@@ -183,13 +212,31 @@ For each game rule, a one-sentence physical analogy:
 | <rule_1> | When [action], [consequence] because [reason] | <fragmentation / momentum / accumulation / etc.> |
 | <rule_2> | When [action], [consequence] because [reason] | ... |
 
+## 1.7 Context-Dependent Action Audit
+
+For each action button (beyond movement), the best and worst moments to press it:
+
+| Action | Best Moment | Worst Moment | Cost of Mistiming |
+| :--- | :--- | :--- | :--- |
+| <action_1> | <when pressing yields maximum benefit> | <when pressing is harmful or wasteful> | <what the player loses> |
+| <action_2> | ... | ... | ... |
+
+## 1.8 Superlinear Scoring Design
+
+- Mechanism: <which superlinear pattern is used — chain multiplier / setup-trigger / condition combo / threshold bonus>
+- Setup: <what the player must do or arrange before the payoff>
+- Trigger: <the action that converts the setup into a large score>
+- Growth curve: <how score scales — e.g., "n-th chain hit scores n × base" or "cluster size² points">
+- Linear baseline: <what a player scores without strategic setup, just reacting>
+- Strategic ceiling: <what a player scores with deliberate setup, and why it is ≥5× the baseline>
+
 ## 2. Object Specifications
 
 <Each object's shape, behavior, collision handling>
 
 ## 3. Design Guide Analysis
 
-<Evaluation against five core design principles, including causal intuition audit>
+<Evaluation against seven core design principles, including causal intuition audit>
 
 ## 4. Relationship with Tags
 
@@ -228,7 +275,7 @@ Confirm the following before completing design.
 - [ ] Is the input scheme within the `button_types` limit chosen in Phase 1?
 - [ ] Is the game over condition single and visually obvious?
 - [ ] Is button mashing/idle play not the optimal solution?
-- [ ] Can you provide reasoned answers to all 5 principles in §2?
+- [ ] Can you provide reasoned answers to all 7 principles in §2?
 - [ ] Did ideas start from tags and have elements beyond existing patterns?
 - [ ] Are there moments of feeling "I've never seen this before"?
 - [ ] If state variables are used, is each one justified by a distinct decision purpose?
@@ -237,6 +284,10 @@ Confirm the following before completing design.
 - [ ] Does at least one world-side persistent history remain from player actions?
 - [ ] Can every rule be stated as a one-sentence physical analogy without game-specific jargon?
 - [ ] Does every consequence share a spatial or physical relationship with its cause?
+- [ ] Does each action button have a documented "best moment" and "worst moment" to press it?
+- [ ] Would "press as often as possible" perform worse than "press at the right moments" for each action?
+- [ ] Is there at least one scoring mechanism where reward grows faster than linearly with consecutive successes?
+- [ ] Can a strategic player score ≥5× more than a player who acts skillfully but without deliberate setup?
 
 ## Appendix: SCAMPER Method (Auxiliary Technique)
 
