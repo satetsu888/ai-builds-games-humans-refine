@@ -356,6 +356,23 @@ Apply rules from `guides/typography-implementation-guide.md`:
 - Do not bundle non-adopted candidate fonts
 - Reflect license info in `THIRD_PARTY_LICENSES.md` and `licenses/`
 
+### Script Validation (required before Phase 6)
+
+Run GDScript static analysis to catch type annotation errors and compilation issues before testing.
+
+```bash
+PROJECT_DIR="$(pwd)/tmp/games/<slug>" && \
+mkdir -p "$PROJECT_DIR"/.tmp-godot-data "$PROJECT_DIR"/.tmp-godot-config "$PROJECT_DIR"/.tmp-godot-cache && \
+XDG_DATA_HOME="$PROJECT_DIR/.tmp-godot-data" \
+XDG_CONFIG_HOME="$PROJECT_DIR/.tmp-godot-config" \
+XDG_CACHE_HOME="$PROJECT_DIR/.tmp-godot-cache" \
+godot --headless --check-only --path "$PROJECT_DIR" 2>&1 | tee "$PROJECT_DIR/logs/check.log"
+```
+
+- Fix all reported errors before proceeding to Phase 6
+- If `--check-only` reports warnings about missing type annotations, add explicit types
+- Re-run until exit code is 0
+
 ---
 
 ## Phase 6: Testing & Evaluation
