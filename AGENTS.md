@@ -36,7 +36,7 @@ Mechanic tag groups:
 | Group | File | Pick |
 | :--- | :--- | :--- |
 | player | `data/tags/mechanism_player_tags.csv` | 1 |
-| action | `data/tags/mechanism_action_tags.csv` (on_pressed / on_holding / on_released) | 2 |
+| action | `data/tags/mechanism_action_tags.csv` | 2 |
 | ability | `data/tags/mechanism_ability_tags.csv` | 1 |
 | context | `data/tags/mechanism_context_tags.csv` (obstacle / field / rule / on_got_item) | 2 |
 
@@ -697,7 +697,7 @@ Note: Visual/sound/AI-genericness evaluations are added only if Phase 8 is execu
 | File                                        | Purpose                                       | Referenced Phase |
 | :------------------------------------------ | :-------------------------------------------- | :--------------- |
 | `data/tags/mechanism_player_tags.csv`       | Player group tags (15 tags)                   | Phase 1          |
-| `data/tags/mechanism_action_tags.csv`       | Action group tags (28 tags: on_pressed/on_holding/on_released) | Phase 1 |
+| `data/tags/mechanism_action_tags.csv`       | Action group tags (27 tags)                   | Phase 1          |
 | `data/tags/mechanism_ability_tags.csv`      | Ability group tags (15 tags)                  | Phase 1          |
 | `data/tags/mechanism_context_tags.csv`      | Context group tags (49 tags: obstacle/field/rule/on_got_item) | Phase 1 |
 | `data/tags/visual_tags.csv`                 | Visual tags (54 tags)                         | Phase 1          |

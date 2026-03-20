@@ -114,11 +114,9 @@ function selectFromGroups(groups, tagsByGroup, rng) {
 }
 
 function getCategory(name) {
-  const parts = name.split("-");
-  if (parts[0] === "on") {
-    return parts.slice(0, 2).join("_");
-  }
-  return parts[0];
+  const hyphenIndex = name.indexOf("-");
+  if (hyphenIndex === -1) return name;
+  return name.substring(0, hyphenIndex);
 }
 
 function formatOutput(selectedTags, seed, format, groupResults) {

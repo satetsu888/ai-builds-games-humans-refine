@@ -162,7 +162,7 @@ When contradicting tags are given, it's an opportunity for invention, not a cons
 | Contradiction Example | Conventional Approach | Creative Interpretation |
 | :--- | :--- | :--- |
 | `field:1D` and `field:3D` | Adopt one | Space that looks 1D but has depth, or move 1D-like in 3D space |
-| `on_pressed:jump` and `on_pressed:shoot` | Select by priority | Jump and shoot as same action (jumping trajectory becomes attack, etc.) |
+| `jump` and `shoot` | Select by priority | Jump and shoot as same action (jumping trajectory becomes attack, etc.) |
 | `player:auto_move` and `on_holding:stop` | Organize dependencies | Design where stopping itself is a risk |
 
 **Principle**: Don't resolve contradiction, invent a new concept that makes contradiction possible.
