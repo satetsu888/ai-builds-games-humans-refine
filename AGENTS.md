@@ -13,7 +13,7 @@ Entry point for AI agents to automatically design, implement, and improve mini-g
 - KPIs (such as exploratory ratio) are **detectors for gameplay quality**, not optimization goals.
 - Changes that degrade player experience must be rejected even if KPI values improve.
 - Scoring must be tied only to in-game event causality. Direct scoring for raw input facts is prohibited.
-- Game-over conditions must be tied to in-world hazards/state collapse. Do not directly punish non-action itself.
+- Game-over conditions must be tied to in-world consequences/state collapse. Do not directly punish non-action itself.
 - Test-agent-specific branching (hidden behavior that is only advantageous/disadvantageous during tests) is prohibited.
 
 ## Instruction: When You Are Told “Make a Game”
@@ -82,7 +82,7 @@ For each mechanic, write a **causal sentence** in the format: "When [action], [c
 
 - **Pass**: "When you break a crystal, shards fly outward because that's how fragmentation works."
 - **Pass**: "When you hold the button, the character charges and glows because energy visibly accumulates."
-- **Fail**: "When you break a crystal, a zone appears that later spawns mutated enemies." (Requires learning an arbitrary rule — no physical intuition connects action to delayed consequence.)
+- **Fail**: "When you break a crystal, a zone appears that later spawns mutated entities." (Requires learning an arbitrary rule — no physical intuition connects action to delayed consequence.)
 
 If a causal sentence requires abstract intermediary concepts (zones, invisible states, delayed triggers, parameters), redesign the mechanic:
 
@@ -131,7 +131,7 @@ Are there moments where the player must choose between meaningfully different op
 Does the game alternate between tension and relief?
 
 - Describe the expected tension curve over a 30-second window.
-- Identify what creates the "peaks" (danger approach, resource depletion) and "valleys" (safe window, reward collection).
+- Identify what creates the "peaks" (challenge intensification, approaching deadline, accumulating instability, resource depletion) and "valleys" (safe window, reward collection).
 - If the game is constant intensity, document why that works for the core experience.
 
 #### (5) Replay Motivation
@@ -165,7 +165,7 @@ Design the screen using visual tags as seeds.
 5. **Causal visibility audit**: For each causal chain from Phase 2 §1.6, design the visual expression that makes the cause-effect link self-evident without text (see `guides/visual-design-guide.md` §2.5). Verify spatial continuity, material continuity, temporal immediacy, and motion logic.
 6. Document anti-AI-generic rules in `VISUAL_DESIGN.md`
 
-- Visual hierarchy rule (1 protagonist / 1 danger / 1 reward)
+- Visual hierarchy rule (1 player-controlled / 1 challenge element / 1 goal element)
 - Upper bound on template-like symbols
 - Feedback design that does not rely on UI text
 - Composition rules (gaze guidance and center-clutter avoidance)
@@ -190,7 +190,7 @@ All SFX must be generated procedurally with Godot `AudioStreamGenerator`; no ext
 5. Define dynamic parameters (combo/speed/difficulty linkage)
 6. For continuous sounds, specify start condition, stop condition, and release on stop (allowed reverb tail)
 7. Validate via checklist (`guides/sound-design-guide.md` §8)
-8. Lock event-to-timbre mapping for `score / danger / damage / state change` within a game
+8. Lock event-to-timbre mapping for `score / tension / failure / state change` within a game
 9. Vary timbre design per game (waveform, pitch range, envelope, modulation, rhythm)
 
 **Output**: `tmp/games/<slug>/SOUND_DESIGN.md` (concept, waveform palette, per-event specs, dynamic parameters)
@@ -363,7 +363,7 @@ Beyond the final score, analyze the **temporal shape** of each test run to detec
 
 Tests should record per-interval snapshots (recommended: every 5 seconds) with at least:
 - Score delta (points gained in this interval)
-- Danger events (shard contacts, near misses, damage taken)
+- Challenge events (hazard contacts, near misses, failures)
 - Active entity count
 
 From these snapshots, evaluate:
@@ -371,8 +371,8 @@ From these snapshots, evaluate:
 | Pattern | Symptom | Likely Cause |
 | :--- | :--- | :--- |
 | Dead start | Score delta = 0 for the first 10+ seconds | Objects take too long to reach the player; no early engagement |
-| Flat tension | Danger events are uniformly distributed | No difficulty escalation or phase transitions; monotone pacing |
-| Spike death | Death occurs within 2 seconds of first damage | No recovery window; difficulty cliff instead of curve |
+| Flat tension | Challenge events are uniformly distributed | No difficulty escalation or phase transitions; monotone pacing |
+| Spike death | Death occurs within 2 seconds of first failure | No recovery window; difficulty cliff instead of curve |
 | No peaks | Score delta is constant throughout | No combo/bonus/risk-reward moments; steady drip of points |
 | Front-loaded | All scoring happens in first half, near-zero later | Difficulty increase shuts down scoring rather than shifting it |
 
@@ -479,7 +479,7 @@ When the human plays the game, the AI should ask for feedback structured around 
 
 #### 5-Second Test (First Impression)
 - Did you understand what to do without reading instructions?
-- Could you distinguish player / threat / reward at a glance?
+- Could you distinguish player / challenge / objective at a glance?
 - Was there an immediate urge to interact?
 
 #### 30-Second Test (Core Loop)

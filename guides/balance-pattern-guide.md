@@ -11,7 +11,7 @@ Balance adjustments fall into several categories:
 3. **Boundary Behavior** - Wall collision and screen edge handling
 4. **Self-Balancing Mechanisms** - Automatic difficulty adjustment
 5. **Input Response** - How button states affect game behavior
-6. **Spawn Patterns** - Enemy and obstacle placement
+6. **Spawn Patterns** - Challenge element placement
 
 ## Guardrails (Read Before Applying Patterns)
 
@@ -377,14 +377,14 @@ if pos.distance_to(player.position) > safe_distance:
 **Before**:
 ```gdscript
 if tick % 60 == 0:
-    spawn_enemy()  # Predictable
+    spawn_object()  # Predictable
 ```
 
 **After**:
 ```gdscript
 next_spawn_ticks -= 1
 if next_spawn_ticks <= 0:
-    spawn_enemy()
+    spawn_object()
     next_spawn_ticks = int(randf_range(base_interval * 0.8, base_interval * 1.2) / sqrt(difficulty))
 ```
 
@@ -408,22 +408,22 @@ var from_left := player.position.x > 50.0  # Spawn from opposite side
 
 **Games using this**: cling-hop
 
-### Pattern 6.4: Distance-Based Enemy Spawn
+### Pattern 6.4: Distance-Based Spawn
 
-**Problem**: Enemy spawn doesn't relate to player progress.
+**Problem**: Object spawn doesn't relate to player progress.
 
 **Before**:
 ```gdscript
 if tick % 100 == 0:
-    spawn_enemy()
+    spawn_object()
 ```
 
 **After**:
 ```gdscript
-next_enemy_dist -= scroll_amount  # Tied to player progress
-if next_enemy_dist < 0.0:
-    spawn_enemy()
-    next_enemy_dist = randf_range(100.0, 200.0) / sqrt(difficulty)
+next_object_dist -= scroll_amount  # Tied to player progress
+if next_object_dist < 0.0:
+    spawn_object()
+    next_object_dist = randf_range(100.0, 200.0) / sqrt(difficulty)
 ```
 
 **Games using this**: stompshelter
@@ -432,13 +432,13 @@ if next_enemy_dist < 0.0:
 
 ## 7. Mechanic Addition Patterns
 
-### Pattern 7.1: Attack/Defense Toggle
+### Pattern 7.1: Mode Toggle with Risk
 
 **Problem**: Player is purely passive, only avoiding.
 
 **Diagnosis**: `telemetry.input_analysis.pattern` shows "no_input" or evasion only.
 
-**Implementation**: Add ability to destroy obstacles in specific state.
+**Implementation**: Add ability to interact with obstacles in specific state.
 
 ```gdscript
 # Player can destroy obstacles when airborne (yellow)

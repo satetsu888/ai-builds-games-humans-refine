@@ -18,7 +18,7 @@ Integrate "principles (what to do)" and "evaluation (confirmation items)" to cla
 
 ### (2) Visual Feedback and Game Over
 
-- Principle: Convey success, failure, and danger states through animation, color, and size changes. Game over conditions should be single and obvious at a glance, such as "collision" or "falling."
+- Principle: Convey success, failure, and danger states through animation, color, and size changes. Game over conditions should be single and obvious at a glance, such as "collision," "falling," "time running out," "structure collapsing," or "gauge depleting."
 - Evaluation: Are action results visually clear? Are failure reasons fair and obvious?
 
 ### (3) Skill-Based Scoring and Risk/Reward
@@ -53,16 +53,16 @@ Examples of mechanics based on input. These are starting points for ideas, not c
 
 | Input | Mechanic | Application Examples |
 | :--- | :--- | :--- |
-| **Press** | Instant change | Direction change (90/180°), jump, shoot, teleport, split, attribute toggle |
-| **Hold** | Accumulation/Extension | Power/angle adjustment, stretch, shield deployment, energy charging |
-| **Release** | Release/Recoil | Projectile firing, charged attack execution, state release effects |
+| **Press** | Instant change | Direction change (90/180°), jump, emit pulse, teleport, split, place marker, attribute toggle |
+| **Hold** | Accumulation/Extension | Power/angle adjustment, stretch, shield deployment, energy charging, toggle state |
+| **Release** | Release/Recoil | Projectile firing, charged burst execution, state release effects |
 
 ### 3.2 Multi-Button Patterns (button_types ≥ 2)
 
 | Pattern | Mechanic | Application Examples |
 | :--- | :--- | :--- |
-| **Role separation** | Each button controls a distinct axis | Move / Attack, Left / Right, Jump / Shoot |
-| **Exclusive toggle** | Only one button's effect is active | Stance switching (offense ↔ defense), element cycling |
+| **Role separation** | Each button controls a distinct axis | Move / Act, Left / Right, Jump / Place |
+| **Exclusive toggle** | Only one button's effect is active | Stance switching (offense ↔ defense, gather ↔ build), element cycling |
 | **Simultaneous combo** | Pressing multiple buttons at once triggers a special action | Charged dash (move + attack), emergency brake |
 | **Sequential chain** | Button order matters | Input combos for special moves, rhythm sequences |
 
@@ -74,12 +74,12 @@ Examples of movement pattern and terrain combinations. Ideas beyond these are we
 
 - **Auto-movement**: Auto-run, constant bouncing, fixed oscillation, acceleration
 - **Special movement**: Gravity reversal, wall reflection, fixed-point rotation, teleport
-- **Actions**: Area attack (AoE), counter, physics-based projectiles, chain reactions, state toggle
+- **Actions**: Area effect (burst/wave), deflection, physics-based projectiles, chain reactions, state toggle
 
 ### 4.2 Environment/Terrain Interaction
 
 - **Terrain**: Irregular ground, floating/moving platforms, chasms, temporary footholds
-- **Gimmicks**: Environment zones with changing behavior, hazards (spikes, crushers), physics puzzles
+- **Gimmicks**: Environment zones with changing behavior, hazards (spikes, crushers, rising water, wind gusts, crumbling floors), physics puzzles
 
 ## 5. Role of Tags
 
@@ -246,7 +246,7 @@ Idea assistance through transformation of existing elements. However, this is an
 - **Combine**: Combine bounce mechanics with direction change.
 - **Adapt**: Adapt existing arcade games or physical phenomena (pendulum, waves) to the chosen `button_types` constraint.
 - **Modify**: Character grows giant with hold duration. Danger increases with speed.
-- **Put to other uses**: Use enemies as platforms or tools.
+- **Put to other uses**: Use obstacles or challenge objects as platforms or tools.
 - **Eliminate**: Remove "obvious" elements like gravity or direct movement control.
 - **Rearrange**: Stage composition constantly changes.
 

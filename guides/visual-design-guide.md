@@ -6,19 +6,19 @@ A guide for designing the visual layer of action mini-games using visual tags as
 
 - Establishing a visually distinctive identity with minimal art assets.
 - Ensuring gameplay readability — every object's role must be instantly recognizable.
-- Making action feedback (hits, scoring, danger) feel satisfying through visuals alone.
+- Making action feedback (events, scoring, challenge) feel satisfying through visuals alone.
 - Maintaining visual coherence when combining multiple tag directions.
 
 ## 2. Five Core Visual Principles and Evaluation Criteria
 
 ### (1) Readability
 
-- Principle: The player must instantly distinguish their character, threats, collectibles, and safe zones. Use contrast in color, brightness, size, and motion — not labels or icons.
+- Principle: The player must instantly distinguish their character, challenges, collectibles, and safe zones. Use contrast in color, brightness, size, and motion — not labels or icons.
 - Evaluation: Can a first-time player identify every object's role within 2 seconds of seeing it?
 
 ### (2) Feedback Clarity
 
-- Principle: Every meaningful game event (scoring, damage, near miss, state change) must produce a visible response. The magnitude of visual response should match the magnitude of the event.
+- Principle: Every meaningful game event (scoring, failure, near miss, state change) must produce a visible response. The magnitude of visual response should match the magnitude of the event.
 - Evaluation: Can the player tell what happened without looking at the score counter? Is the difference between "scored 1 point" and "scored 10 points" visually obvious?
 
 ### (3) Aesthetic Coherence
@@ -93,14 +93,14 @@ Design in the following order after mechanism design (Phase 2) is complete.
    - Which visual technique best communicates the core mechanic?
    - Which game events deserve the strongest visual response?
    - Does the visual style suggest new feedback opportunities the mechanics design didn't consider?
-4. **Palette Decision**: Choose 3–5 colors derived from the tag mood. Assign each color a gameplay role. Typical roles include Player, Threat, Background, Positive feedback, Warning — but adapt roles to the game's actual needs (e.g., a game with state-switching may need State-A / State-B instead of fixed Threat / Warning).
+4. **Palette Decision**: Choose 3–5 colors derived from the tag mood. Assign each color a gameplay role. Typical roles include Player, Challenge, Background, Success, Caution — but adapt roles to the game's actual needs (e.g., a game with state-switching may need State-A / State-B instead of fixed Challenge / Caution).
 5. **Layer Structure**: Define visual depth layers:
    - Background (atmospheric, low contrast)
    - Play field (mid layer, primary action)
    - Foreground effects (particles, flashes, UI)
 6. **Feedback Mapping**: For each game event, define the visual response using the tag style:
    - Score gain → (e.g., additive glow burst, ripple expansion)
-   - Damage / game over → (e.g., chromatic split, screen shake)
+   - Failure / game over → (e.g., chromatic split, screen shake)
    - Near miss → (e.g., subtle rim flash, trail intensification)
    - State change → (e.g., palette shift, geometry transformation)
 7. **Causal Visibility Audit**: For each mechanic with a cause-and-effect chain, verify the visual design satisfies spatial continuity, material continuity, temporal immediacy, and motion logic (see §2.5). If any causal chain lacks a self-evident visual bridge, redesign the visual expression or flag the mechanic for redesign.
@@ -112,15 +112,15 @@ Visual design is not decoration — it communicates game state. The following pa
 
 ### 6.1 Game Feel Techniques
 
-Apply these to **all objects** (player, enemies, obstacles, items), not just the player. Consistent application across objects creates a cohesive "lively" world.
+Apply these to **all objects** (player, autonomous objects, obstacles, items), not just the player. Consistent application across objects creates a cohesive "lively" world.
 
 | Technique | Description | Relevant Visual Tags |
 |:---|:---|:---|
 | **Squash & Stretch** | Deform objects on impact, jump, landing. Idle objects breathe subtly. | `motionviz-elastic-deformation`, `analog-micro-jitter` |
-| **Dynamic Tilt** | Tilt objects toward movement direction. Spinning enemies rotate with velocity. | `motionviz-rotation-reactive`, `geometry-diagonal-dominance` |
-| **Afterimage Trail** | Leave fading copies during fast movement. Apply to enemies and projectiles too. | `motionviz-afterimage-trail`, `analog-frame-blend` |
+| **Dynamic Tilt** | Tilt objects toward movement direction. Spinning non-player entities rotate with velocity. | `motionviz-rotation-reactive`, `geometry-diagonal-dominance` |
+| **Afterimage Trail** | Leave fading copies during fast movement. Apply to non-player entities and moving objects too. | `motionviz-afterimage-trail`, `analog-frame-blend` |
 | **Impact Particles** | Scatter fragments on collision, destruction, landing, spawning. | `motionviz-impact-ripple`, `background-particle-layer` |
-| **Glow Buildup** | Gradually intensify glow to telegraph danger or charge state. | `motionviz-energy-glow-build`, `lighting-additive-glow` |
+| **Glow Buildup** | Gradually intensify glow to telegraph challenge or charge state. | `motionviz-energy-glow-build`, `lighting-additive-glow` |
 
 ### 6.2 Mechanic-to-Visual Mapping Examples
 
@@ -128,7 +128,7 @@ Apply these to **all objects** (player, enemies, obstacles, items), not just the
 |:---|:---|:---|
 | `player-rotate` | `motionviz-velocity-hue-shift` | Color shifts with rotation speed — faster = warmer hue |
 | `ability-instant_line` | `render-glow-outline` | Line of influence rendered as bright emissive line with bloom halo |
-| `obstacle-chase` | `motionviz-afterimage-trail` | Pursuing enemies leave ghost trails showing trajectory |
+| `obstacle-chase` | `motionviz-afterimage-trail` | Pursuing objects leave ghost trails showing trajectory |
 | `on_holding-charge` | `motionviz-energy-glow-build` | Held button builds visible glow around player |
 | `field-auto_scroll` | `background-flow-lines` | Scrolling direction visualized by flowing streamlines |
 | `rule-combo_multiplier` | `typography-numeric-focus` | Combo counter grows in size/brightness with multiplier |
@@ -158,9 +158,9 @@ When producing `tmp/games/<slug>/VISUAL_DESIGN.md`, include the following sectio
 
 ### 7.1 Visual Hierarchy Rules
 
-- Protagonist:
-- Threat:
-- Reward:
+- Player-controlled:
+- Challenge element:
+- Goal element:
 - 2-second recognition check:
 
 ### 7.2 Limits on Familiar Template Symbols
@@ -173,7 +173,7 @@ When producing `tmp/games/<slug>/VISUAL_DESIGN.md`, include the following sectio
 | Event | Non-UI visual response | Intensity (Low/Med/High) |
 | :---- | :--------------------- | :----------------------- |
 | Score | ...                    | ...                      |
-| Damage | ...                   | ...                      |
+| Failure | ...                   | ...                      |
 | Near miss | ...                | ...                      |
 
 ### 7.4 Composition and Gaze Guidance
@@ -303,7 +303,7 @@ func _draw():
 ### 8.5 Screen-Space Effect Patterns
 
 ```gdscript
-# Screen shake (feedback on damage/impact)
+# Screen shake (feedback on failure/impact)
 var shake_intensity := 0.0
 var shake_decay := 5.0
 
@@ -375,7 +375,7 @@ Output in the following format to `tmp/games/<slug>/VISUAL_DESIGN.md`.
 | <role_2> | ... | #... | ... |
 | <role_3> | ... | #... | ... |
 
-Assign 3–5 roles based on the game's actual needs (e.g., Player, Threat, Background, Positive feedback, Warning — or substitute with game-specific roles like State-A / State-B).
+Assign 3–5 roles based on the game's actual needs (e.g., Player, Challenge, Background, Success, Caution — or substitute with game-specific roles like State-A / State-B).
 
 ## 3. Object Rendering Specifications
 
@@ -390,7 +390,7 @@ Assign 3–5 roles based on the game's actual needs (e.g., Player, Threat, Backg
 | Event | Visual Response | Tag Reference |
 |:---|:---|:---|
 | Score gain | ... | ... |
-| Damage | ... | ... |
+| Failure | ... | ... |
 | Near miss | ... | ... |
 | Game over | ... | ... |
 | State change | ... | ... |
@@ -413,8 +413,8 @@ For each causal chain from the game design, how the visual design makes the conn
 
 Confirm the following before completing visual design.
 
-- [ ] Can every object's role (player, threat, collectible, environment) be identified at a glance?
-- [ ] Does every game event (score, damage, near miss) have a distinct visual response?
+- [ ] Can every object's role (player, challenge, collectible, environment) be identified at a glance?
+- [ ] Does every game event (score, failure, near miss) have a distinct visual response?
 - [ ] Do all visual elements share a coherent style (consistent stroke, color temperature, motion quality)?
 - [ ] Does the screen feel alive even during idle moments (subtle motion, breathing, ambient effects)?
 - [ ] Is the visual style grounded in the selected tags while going beyond literal interpretation?
@@ -443,7 +443,7 @@ Tags are seeds, not specifications. Interpret, combine, and transcend.
 ### ❌ Style Inconsistency
 
 ```
-Player drawn with glow outlines, enemies drawn with solid fills, background uses pixel art.
+Player drawn with glow outlines, non-player entities drawn with solid fills, background uses pixel art.
 All elements must share the same visual language.
 ```
 
@@ -465,7 +465,7 @@ Visuals must serve readability and feedback, not just aesthetics.
 
 ```
 Action happens at location A, consequence appears at location B with no visual link.
-"Break a crystal here → a zone appears → later, different enemies spawn from that zone."
+"Break a crystal here → a zone appears → later, different entities spawn from that zone."
 The player cannot predict or understand this chain from visuals alone.
 Every consequence must visually emerge from its cause: same location, similar material, connected motion.
 ```

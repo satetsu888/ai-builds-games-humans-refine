@@ -16,7 +16,7 @@ It must not lock gameplay, visual identity, or audio identity.
 - Default visual style (palette, glow profile, HUD language, scripted FX)
 - Event-level SFX vocabulary tied to gameplay semantics
 - Pre-bundled font assets and font license payloads
-- Domain-locked naming in base interfaces (e.g. fixed `left/right/thrust`, `enemy/chaser` semantics)
+- Domain-locked naming in base interfaces (e.g. fixed `left/right/thrust`, `object/chaser` semantics)
 - Predefined exploratory input choreography that assumes a specific control fantasy
 
 ## Implementation Note

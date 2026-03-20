@@ -62,7 +62,7 @@ The analysis target is the structure below output by `run_tests.gd` to `logs/tes
 
 Check items:
 
-- Death-position bias (clustered near the same coordinates)
+- Failure-position bias (clustered near the same coordinates)
 - Frequent deaths within 1-3 frames right after input
 - Only specific hazards have disproportionately high death rates
 
@@ -70,7 +70,7 @@ Typical causes:
 
 - Unavoidable spawns
 - High-speed entry without telegraph
-- Insufficient failure-recovery design such as i-frames/knockback
+- Insufficient failure-recovery design such as grace periods / recovery windows
 
 Related balance patterns: `balance-pattern-guide.md` §1.1 (sqrt transform), §3.1/3.3 (boundary handling), §6.1 (safe distance)
 
@@ -144,14 +144,14 @@ Insufficient response:
 
 ```gdscript
 # ❌ Only lower speed
-enemy_speed *= 0.8
+object_speed *= 0.8
 ```
 
 Recommended response:
 
 ```gdscript
 # ✅ Spawn checks that guarantee an escape route
-func spawn_enemy() -> void:
+func spawn_object() -> void:
     for _i in range(8):
         var p := _random_spawn_point()
         if _has_escape_route(p):
@@ -397,7 +397,7 @@ If any of the following is `No`, fail even if exploratory ratio is high.
 ### ❌ Parameter-Only Fix
 
 ```gdscript
-enemy_speed *= 0.8
+object_speed *= 0.8
 spawn_interval += 0.2
 ```
 

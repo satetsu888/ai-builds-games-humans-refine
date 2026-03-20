@@ -13,7 +13,7 @@ A guide for designing the sound layer of action mini-games using procedural audi
 
 ### (1) Event Clarity
 
-- Principle: Every significant game event must produce a distinct sound. The player should be able to identify what happened by sound alone — scoring, damage, near miss, and game over must be aurally distinguishable.
+- Principle: Every significant game event must produce a distinct sound. The player should be able to identify what happened by sound alone — scoring, failure, near miss, and game over must be aurally distinguishable.
 - Evaluation: Can a player identify the event type with eyes closed? Are different event magnitudes (1 point vs. 10 points) audibly different?
 
 ### (2) Audio–Visual Coherence
@@ -28,12 +28,12 @@ A guide for designing the sound layer of action mini-games using procedural audi
 
 ### (4) Dynamic Response
 
-- Principle: Sounds should react to game state — pitch rises with combo multiplier, impact sounds scale with velocity, danger sounds intensify as difficulty increases. Static, unchanging sounds feel lifeless.
+- Principle: Sounds should react to game state — pitch rises with combo multiplier, impact sounds scale with velocity, tension sounds intensify as difficulty increases. Static, unchanging sounds feel lifeless.
 - Evaluation: Do sounds change with gameplay intensity? Can the player sense escalation through audio alone?
 
 ### (5) Semantic Lock (In-Game) and Variation (Cross-Game)
 
-- Principle: Within a single game, each event family (`score / danger / damage / state change`) should keep a consistent timbral identity for fast recognition. Across different games, that identity must be redesigned from visual tags and game concept — not copied as a global template.
+- Principle: Within a single game, each event family (`score / tension / failure / state change`) should keep a consistent timbral identity for fast recognition. Across different games, that identity must be redesigned from visual tags and game concept — not copied as a global template.
 - Clarification:
   - **In-game fixed**: Event meaning ↔ timbre mapping stays stable during one game's session.
   - **Cross-game variable**: Waveform set, pitch range, envelope shape, modulation style, and rhythmic spacing should change per game.
@@ -106,7 +106,7 @@ Every mini-game should define sounds for the following events. Not all events ap
 | Event              | Purpose                | Typical Duration | Design Notes                                                      |
 | :----------------- | :--------------------- | :--------------- | :---------------------------------------------------------------- |
 | **Score gain**     | Positive reinforcement | 50–150ms         | Bright, upward pitch. Scale pitch/layers with point value.        |
-| **Damage / death** | Failure signal         | 200–500ms        | Low, dissonant, or noisy. Must contrast sharply with score sound. |
+| **Failure / loss** | Negative outcome signal | 200–500ms        | Low, dissonant, or noisy. Must contrast sharply with score sound. |
 | **Game over**      | Terminal state         | 300–800ms        | Descending pitch or fade-out. Finality.                           |
 
 ### 4.2 Enhancement Events (Recommended)
@@ -139,7 +139,7 @@ This section focuses on design decisions. Template assets are the source of trut
 
 Use a hybrid approach by default.
 
-1. **One-shot SFX (score / danger / damage / state change)**  
+1. **One-shot SFX (score / tension / failure / state change)**
    Use `procedural generate -> PCM cache -> AudioStreamWAV` as the default.
 2. **Continuous controlled audio (engine / thrust / beam, etc.)**  
    First try `procedural generate -> PCM cache -> AudioStreamWAV(loop)`. If requirements can be met via `volume_db / pitch_scale`, use it as the default.  
@@ -155,11 +155,11 @@ Implementation notes:
 
 ### 5.2 Event Semantics Lock (In-Game)
 
-Lock the timbre mapping of `score / danger / damage / state change` within a single game.
+Lock the timbre mapping of `score / tension / failure / state change` within a single game.
 
 - `score`: bright short tones with an upward or opening impression
-- `danger`: mid-high noise or dissonant components signaling tension
-- `damage`: low-end leaning + short noise transient
+- `tension`: mid-high noise or dissonant components signaling rising stakes
+- `failure`: low-end leaning + short noise transient signaling negative outcome
 - `state change`: independent motif indicating semantic transition (typically 120-350ms)
 
 ### 5.3 Variation Budget (Recommended Ranges)
@@ -178,7 +178,7 @@ Apply randomization only within ranges that preserve recognizability.
 
 Control continuous sound in the following three stages.
 
-1. Target: derive target gain/target pitch from input, velocity, and danger level
+1. Target: derive target gain/target pitch from input, velocity, and tension level
 2. Smoothing: smooth with `current += (target - current) * alpha`
 3. Release: after input release, apply ~100-250ms of decay
 
@@ -217,8 +217,8 @@ Operational rules:
    - Suppress hot-path `match`-based dictionary generation and excess temporary objects
 
 4. **Continuous noise components need state-gating**
-   - Do not keep noise components of continuous sound (engine/thrust/beam etc.) constant; gate by speed, danger level, and input state
-   - Reduce constant noise feel in low-load states and preserve audibility of informational sounds (score/damage)
+   - Do not keep noise components of continuous sound (engine/thrust/beam etc.) constant; gate by speed, tension level, and input state
+   - Reduce constant noise feel in low-load states and preserve audibility of informational sounds (score/failure)
 
 ## 6. Procedure for Sound Design from Visual Tags
 
@@ -227,7 +227,7 @@ Design after visual design (Phase 3) is complete.
 1. **Tag Interpretation**: Read each visual tag's `description` and `keywords`. Identify the sonic qualities they imply (refer to §3 mapping table).
 2. **Cross-Tag Audio Synthesis**: Find the shared audio character across all selected visual tags. Express it in one phrase (e.g., "resonant synthetic pulses," "gritty percussive clicks").
 3. **Waveform Selection**: Choose 1–2 primary waveforms and modulation techniques that match the direction.
-4. **Semantic Timbre Mapping**: Define a stable in-game mapping for `score / danger / damage / state change` (same meaning, same timbral family).
+4. **Semantic Timbre Mapping**: Define a stable in-game mapping for `score / tension / failure / state change` (same meaning, same timbral family).
 5. **Cross-Game Variation Plan**: Explicitly decide what will vary versus previous games:
    - waveform palette
    - pitch range
@@ -264,7 +264,7 @@ Output in the following format to `tmp/games/<slug>/SOUND_DESIGN.md`.
 | Event      | Waveform | Frequency | Duration | Envelope | Dynamic Parameter   |
 | :--------- | :------- | :-------- | :------- | :------- | :------------------ |
 | Score gain | ...      | ...       | ...      | ...      | pitch += combo \* N |
-| Damage     | ...      | ...       | ...      | ...      | —                   |
+| Failure    | ...      | ...       | ...      | ...      | —                   |
 | Game over  | ...      | ...       | ...      | ...      | —                   |
 | ...        | ...      | ...       | ...      | ...      | ...                 |
 
@@ -279,8 +279,8 @@ Output in the following format to `tmp/games/<slug>/SOUND_DESIGN.md`.
 | Event Family | Timbre Family | Why it is recognizable |
 | :----------- | :------------ | :--------------------- |
 | Score        | ...           | ...                    |
-| Danger       | ...           | ...                    |
-| Damage       | ...           | ...                    |
+| Tension      | ...           | ...                    |
+| Failure      | ...           | ...                    |
 | State change | ...           | ...                    |
 
 ### 5.2 Cross-Game Variation Plan
@@ -293,11 +293,11 @@ Output in the following format to `tmp/games/<slug>/SOUND_DESIGN.md`.
 
 Confirm the following before completing sound design.
 
-- [ ] Can the player distinguish all game events by sound alone (score, damage, game over)?
+- [ ] Can the player distinguish all game events by sound alone (score, failure, game over)?
 - [ ] Does the sonic style match the visual identity derived from the same tags?
 - [ ] Are sounds short and non-overlapping during normal gameplay?
 - [ ] Do at least some sounds respond dynamically to game state (combo, velocity, difficulty)?
-- [ ] Is `score / danger / damage / state change` timbre mapping consistent within this game?
+- [ ] Is `score / tension / failure / state change` timbre mapping consistent within this game?
 - [ ] Is there an explicit cross-game variation plan (not a reused global audio template)?
 - [ ] Is variation kept within a defined budget (pitch/duration/envelope/duty/noise) so event identity remains clear?
 - [ ] Is motif-first variation used (2–3 fixed variants + micro-variation), rather than pure random only?
@@ -335,7 +335,7 @@ Dynamic parameters make audio feel alive and responsive.
 ### ❌ Global Template Reuse
 
 ```
-Using the same score/damage/game-over timbres across multiple generated games.
+Using the same score/failure/game-over timbres across multiple generated games.
 Keep semantic consistency inside one game, but redesign timbre identity per game.
 ```
 
