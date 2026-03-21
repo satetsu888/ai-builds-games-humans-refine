@@ -55,7 +55,7 @@ body {
 		<canvas id="canvas" width="540" height="960"></canvas>
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":134420,"index.wasm":37685705},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":134420,"index.wasm":36822677},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const gameCanvas = document.getElementById('canvas');
 const loader = document.getElementById('loader');
 const loaderFill = document.getElementById('loader-fill');
@@ -88,10 +88,6 @@ window.addEventListener('orientationchange', fitCanvas);
 fitCanvas();
 
 const engine = new Engine(GODOT_CONFIG);
-// Debug: show status on screen for mobile debugging
-let debugTimeout = setTimeout(() => {
-	loaderText.textContent = '100% - engine not responding after 10s';
-}, 10000);
 engine.startGame({
 	onProgress: (current, total) => {
 		if (total > 0) {
@@ -103,20 +99,10 @@ engine.startGame({
 		loaderText.textContent = `${Math.floor(current / 1024)} KB`;
 	},
 }).then(() => {
-	clearTimeout(debugTimeout);
 	loader.style.display = 'none';
 }).catch((error) => {
-	clearTimeout(debugTimeout);
-	loaderText.textContent = 'Load failed: ' + (error && error.message ? error.message : String(error));
-	loaderText.style.wordBreak = 'break-all';
-	loaderText.style.maxWidth = '280px';
+	loaderText.textContent = 'Load failed';
 	console.error(error);
-});
-window.addEventListener('error', (e) => {
-	loaderText.textContent = 'Error: ' + e.message;
-});
-window.addEventListener('unhandledrejection', (e) => {
-	loaderText.textContent = 'Rejection: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason));
 });
 		</script>
 	</body>
