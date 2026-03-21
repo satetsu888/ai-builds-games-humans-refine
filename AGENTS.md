@@ -81,19 +81,21 @@ Phase 2 has two stages: **Design** (imagine the fun, build the minimum) and **Ve
 2. Describe the core experience as a concrete moment: "The player feels [emotion] when [specific moment happens]" — if you cannot make someone want to play with this one sentence, the concept is not ready
 3. Design ONE core mechanic that creates that moment
 4. Design controls (within `button_types` chosen in Phase 1)
-5. Design scoring that naturally rewards the core experience
+5. Design mobile touch layout: map each control action to a touch zone. The virtual gamepad must accommodate all actions within thumb-reachable screen regions. Separate directional movement and action buttons (e.g., movement on one side, actions on the other). Choose screen orientation (portrait `540x960` recommended for single-hand play; landscape if the game requires wide field of view) and document the choice with rationale.
+6. Design game flow states: every game must have three states — **title**, **playing**, and **game_over**. Title screen starts the game via keyboard (SPACE/Z/Enter) or screen tap. Game-over screen shows final score and a retry prompt, activated via R key or retry button tap. Document the transition triggers in the controls section.
+7. Design scoring that naturally rewards the core experience
 
 ### Stage 2 — Verify (guards as quality tests)
 
 Test the design against each guard. For any failing guard, return to Stage 1 and redesign the core — do not add new mechanics.
 
-6. Causal chain audit (see Causal Intuition Guard below)
-7. Context-dependent action audit (see Context-Dependent Action Guard below)
-8. Superlinear scoring design (see Superlinear Scoring Guard below)
-9. Engagement design (see Engagement Design below)
-10. Validate via checklist (`guides/mini-game-design-guide.md` §10 and all Guard/Engagement checklists below)
+8. Causal chain audit (see Causal Intuition Guard below)
+9. Context-dependent action audit (see Context-Dependent Action Guard below)
+10. Superlinear scoring design (see Superlinear Scoring Guard below)
+11. Engagement design (see Engagement Design below)
+12. Validate via checklist (`guides/mini-game-design-guide.md` §10 and all Guard/Engagement checklists below)
 
-**Output**: `tmp/games/<slug>/README.md` (core mechanics, controls, object specs, novelty rationale, tag log, state-variable table, tradeoff explanation, engagement design)
+**Output**: `tmp/games/<slug>/README.md` (core mechanics, controls, touch zone layout, screen orientation, game flow states, object specs, novelty rationale, tag log, state-variable table, tradeoff explanation, engagement design)
 
 **Visible-Causality Guard (required)**:
 
@@ -291,6 +293,52 @@ Template scope is documented in `templates/godot-base/TEMPLATE_SCOPE.md`.
 - Must run with `--headless`
 - Before font adoption, implement using `ThemeDB` fallback only (no pre-bundled fonts)
 
+### Game State Machine & Input Requirements
+
+Every game must implement the following baseline interaction patterns. These are not part of the template (they involve game-specific logic) but are mandatory for every game built from the template.
+
+#### Game State Machine
+
+Implement a three-state machine in the main orchestrator:
+
+- **title**: Display game name and controls summary. Transition to `playing` on keyboard input (SPACE, Z, or Enter) or screen tap. Do not auto-start.
+- **playing**: Run the game loop. Transition to `game_over` when the game-over condition triggers.
+- **game_over**: Display final score and retry prompt ("Press R to Retry" + visible retry button for touch). Transition to `playing` (via `_reset_game()`) on R key press or retry button tap. Do not auto-restart.
+
+Test hooks (`enable_test_mode`, `force_reset_for_test`) must set state to `playing` directly, bypassing the title screen.
+
+#### Touch Input Handling
+
+All games must accept touch input alongside keyboard input:
+
+- Handle `InputEventScreenTouch`, `InputEventScreenDrag`, and `InputEventMouseButton` (left click as touch proxy for desktop testing) in `_input(event)`.
+- Map screen coordinates to named zones via a `_touch_zone(pos: Vector2) -> String` function. Zone definitions are game-specific (based on the control layout designed in Phase 2).
+- Track active touches in a Dictionary (`touch_index -> zone_name`) and derive boolean input flags per zone via `_update_touch_state()`.
+- Set a `has_touch: bool` flag on first `InputEventScreenTouch`. This flag is permanent (never resets to false) and controls virtual gamepad visibility.
+- Scale touch coordinates from viewport space to game resolution before zone mapping (e.g., `game_resolution / viewport_size`).
+- In `playing` state, unify keyboard and touch inputs (e.g., `var move_left := Input.is_key_pressed(KEY_A) or touch_left`).
+- In `title` state, accept a start-zone tap or generic screen tap as game start.
+- In `game_over` state, accept a retry-zone tap to restart.
+
+#### Virtual Gamepad
+
+When `has_touch` is true, draw a virtual gamepad in the rendering layer:
+
+- Reserve a control area separated from the gameplay area (e.g., below or beside the game field). The gameplay area and the control area must not overlap.
+- Draw one button per game action, sized for thumb operation (minimum ~100×80 pixels at game resolution).
+- Provide visual press feedback (opacity change or color shift when a zone is active).
+- Label each button with its action icon or short text.
+- In `game_over` state, draw a visible retry button within the game area.
+- In `title` state, draw a visible start button.
+- Do not show the virtual gamepad when `has_touch` is false (keyboard/gamepad-only users should not see touch buttons).
+
+#### Screen Orientation
+
+- Portrait orientation (`540x960`) is recommended for mobile ergonomics (thumb-reachable controls at the bottom).
+- Landscape is allowed if the game design requires a wide field of view.
+- When choosing orientation, update `project.godot`, `web/custom_shell.html`, and `export_presets.cfg` together (existing resolution change rule).
+- The control area layout must account for the chosen orientation: portrait games place controls at the bottom; landscape games place controls on the sides or bottom.
+
 ### Implementation Policy (for iterative improvement)
 
 - Split into multiple scripts by responsibility, not one giant script.
@@ -485,6 +533,12 @@ Check:
 - [ ] For each action button, spam policy scores less than timing-aware policy (context-dependent actions)
 - [ ] At least one superlinear scoring mechanism produces observable score acceleration in test results
 - [ ] For each added state variable, non-HUD in-world causality is implemented in code
+- [ ] Game state machine transitions correctly: title → playing → game_over → playing (retry)
+- [ ] R key restarts the game from game_over state
+- [ ] Touch zones are defined for all control actions plus start and retry
+- [ ] Virtual gamepad renders only when `has_touch` is true
+- [ ] Title screen does not auto-start; requires explicit input
+- [ ] Game-over screen displays final score and retry prompt
 
 Subjective visual/sound evaluation and UI-hidden comprehension checks are done in Phase 8.
 
