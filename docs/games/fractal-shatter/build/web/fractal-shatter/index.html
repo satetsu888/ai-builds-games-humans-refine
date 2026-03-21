@@ -88,6 +88,10 @@ window.addEventListener('orientationchange', fitCanvas);
 fitCanvas();
 
 const engine = new Engine(GODOT_CONFIG);
+// Debug: show status on screen for mobile debugging
+let debugTimeout = setTimeout(() => {
+	loaderText.textContent = '100% - engine not responding after 10s';
+}, 10000);
 engine.startGame({
 	onProgress: (current, total) => {
 		if (total > 0) {
@@ -99,10 +103,20 @@ engine.startGame({
 		loaderText.textContent = `${Math.floor(current / 1024)} KB`;
 	},
 }).then(() => {
+	clearTimeout(debugTimeout);
 	loader.style.display = 'none';
 }).catch((error) => {
-	loaderText.textContent = 'Load failed';
+	clearTimeout(debugTimeout);
+	loaderText.textContent = 'Load failed: ' + (error && error.message ? error.message : String(error));
+	loaderText.style.wordBreak = 'break-all';
+	loaderText.style.maxWidth = '280px';
 	console.error(error);
+});
+window.addEventListener('error', (e) => {
+	loaderText.textContent = 'Error: ' + e.message;
+});
+window.addEventListener('unhandledrejection', (e) => {
+	loaderText.textContent = 'Rejection: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason));
 });
 		</script>
 	</body>
