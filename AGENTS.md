@@ -409,6 +409,28 @@ Do not merge all documents into one file; use `README.md` as the index page.
   - Center canvas via centered `body` layout
 - Do not directly edit `build/web/index.html` (it is overwritten on re-export).
 
+### Older Browser Compatibility (required)
+
+Web exports must work on older smartphone browsers (e.g., devices 3-5 years old). Apply the following settings to every game:
+
+#### Nothreads Export Template
+
+Use Godot's `nothreads` variant of the WebAssembly export template. This avoids reliance on `SharedArrayBuffer` and `WebWorker`, which older mobile browsers do not support reliably.
+
+- The project stores the nothreads template at `templates/export/godot.web.template_release.wasm32.nothreads.zip`.
+- After copying the template with `cp -r templates/godot-base/ tmp/games/<slug>/`, set `custom_template/release` in `export_presets.cfg` to the **absolute path** of the nothreads template zip (Godot requires absolute paths for custom templates). Use the project root to resolve: `<PROJECT_ROOT>/templates/export/godot.web.template_release.wasm32.nothreads.zip`.
+- When upgrading Godot version, rebuild the nothreads template from source with SIMD disabled (`scons platform=web target=template_release arch=wasm32 threads=no use_volk=no`), then update the template file in `templates/export/`.
+
+#### Cross-Origin Isolation Headers
+
+Godot's default web export sets `ensureCrossOriginIsolationHeaders: true` in `GODOT_CONFIG`, which requires COOP/COEP headers. Older browsers fail to load with these headers.
+
+- After web export, verify that the generated `index.html` contains `"ensureCrossOriginIsolationHeaders":false` in `GODOT_CONFIG`. The nothreads template should produce this automatically; if not, patch the generated `index.html` as a post-export step.
+
+#### SIMD Disabled
+
+The nothreads template must be built without WebAssembly SIMD instructions. Older mobile devices lack SIMD support in their WASM engines. The custom template build command above (`arch=wasm32`) produces a non-SIMD build.
+
 ### Typography Implementation
 
 Apply rules from `guides/typography-implementation-guide.md`:
@@ -782,6 +804,7 @@ Note: Visual/sound/AI-genericness evaluations are added only if Phase 8 is execu
 | `guides/sound-design-guide.md`              | Sound design guide (procedural audio)         | Phase 4          |
 | `templates/godot-base/`                     | New game initialization template              | Phase 5          |
 | `templates/godot-base/TEMPLATE_SCOPE.md`    | Template immutable-layer rules                | Phase 5          |
+| `templates/export/godot.web.template_release.wasm32.nothreads.zip` | Nothreads WASM export template (older browser compat) | Phase 5 |
 | `guides/game-improvement-guide.md`          | Improvement guide (analysis methods)          | Phase 7          |
 | `guides/balance-pattern-guide.md`           | Balance adjustment pattern set                | Phase 7          |
 | `.agents/skills/headless-godot/`            | Godot headless operation skill                | Phase 5-6        |
