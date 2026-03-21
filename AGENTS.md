@@ -66,14 +66,32 @@ If `button_types` must also be reproducible, use the same `-s <number>` and a se
 
 Design game rules using mechanic tags as seeds.
 
+### Design Principle: Experience First, Then Verify
+
+Phase 2 has two stages: **Design** (imagine the fun, build the minimum) and **Verify** (test quality with guards).
+
+- Guards and checklists exist to TEST whether the core experience has depth, not to ADD mechanics.
+- If a guard check fails, return to Stage 1 and redesign the core mechanic. Do NOT add a new mechanic to pass the check.
+- A mini-game should have ONE core mechanic that is deep, not many mechanics that are shallow.
+- **Complexity budget**: A design may have at most 3 mechanics beyond basic movement. If you exceed this, simplify before proceeding. Satisfying guards through the depth of one mechanic is better than satisfying them through the breadth of many.
+
+### Stage 1 — Design (experience-first)
+
 1. Free-association and deliberate deviation from tags
-2. Define the core experience in one sentence
-3. Design controls (within `button_types` chosen in Phase 1)
-4. Causal chain audit (see Causal Intuition Guard below)
-5. Context-dependent action audit (see Context-Dependent Action Guard below)
-6. Superlinear scoring design (see Superlinear Scoring Guard below)
-7. Design player engagement (see Engagement Design below)
-8. Validate via checklist (`guides/mini-game-design-guide.md` §10 and all Guard/Engagement checklists below)
+2. Describe the core experience as a concrete moment: "The player feels [emotion] when [specific moment happens]" — if you cannot make someone want to play with this one sentence, the concept is not ready
+3. Design ONE core mechanic that creates that moment
+4. Design controls (within `button_types` chosen in Phase 1)
+5. Design scoring that naturally rewards the core experience
+
+### Stage 2 — Verify (guards as quality tests)
+
+Test the design against each guard. For any failing guard, return to Stage 1 and redesign the core — do not add new mechanics.
+
+6. Causal chain audit (see Causal Intuition Guard below)
+7. Context-dependent action audit (see Context-Dependent Action Guard below)
+8. Superlinear scoring design (see Superlinear Scoring Guard below)
+9. Engagement design (see Engagement Design below)
+10. Validate via checklist (`guides/mini-game-design-guide.md` §10 and all Guard/Engagement checklists below)
 
 **Output**: `tmp/games/<slug>/README.md` (core mechanics, controls, object specs, novelty rationale, tag log, state-variable table, tradeoff explanation, engagement design)
 
