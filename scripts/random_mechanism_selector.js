@@ -8,7 +8,7 @@
  *   player  (1 tag)  — data/tags/mechanism_player_tags.csv
  *   action  (2 tags) — data/tags/mechanism_action_tags.csv
  *   ability (1 tag)  — data/tags/mechanism_ability_tags.csv
- *   context (2 tags) — data/tags/mechanism_context_tags.csv
+ *   context (1 tag) — data/tags/mechanism_context_tags.csv
  *
  * Usage:
  *   node scripts/random_mechanism_selector.js [options]
@@ -26,7 +26,7 @@ const GROUPS = [
   { name: "player", file: "data/tags/mechanism_player_tags.csv", count: 1 },
   { name: "action", file: "data/tags/mechanism_action_tags.csv", count: 2 },
   { name: "ability", file: "data/tags/mechanism_ability_tags.csv", count: 1 },
-  { name: "context", file: "data/tags/mechanism_context_tags.csv", count: 2 },
+  { name: "context", file: "data/tags/mechanism_context_tags.csv", count: 1 },
 ];
 
 // Xorshift128 PRNG (same as random_tag_selector.js for seed compatibility)
@@ -196,7 +196,7 @@ Groups:
   player  (1 tag)  — data/tags/mechanism_player_tags.csv
   action  (2 tags) — data/tags/mechanism_action_tags.csv
   ability (1 tag)  — data/tags/mechanism_ability_tags.csv
-  context (2 tags) — data/tags/mechanism_context_tags.csv
+  context (1 tag) — data/tags/mechanism_context_tags.csv
 
 Usage:
   node scripts/random_mechanism_selector.js [options]

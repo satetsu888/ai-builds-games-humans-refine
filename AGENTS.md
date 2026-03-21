@@ -38,7 +38,7 @@ Mechanic tag groups:
 | player | `data/tags/mechanism_player_tags.csv` | 1 |
 | action | `data/tags/mechanism_action_tags.csv` | 2 |
 | ability | `data/tags/mechanism_ability_tags.csv` | 1 |
-| context | `data/tags/mechanism_context_tags.csv` (obstacle / field / rule / on_got_item) | 2 |
+| context | `data/tags/mechanism_context_tags.csv` (obstacle / field / rule / on_got_item) | 1 |
 
 ```bash
 node scripts/random_mechanism_selector.js
@@ -55,7 +55,7 @@ If `button_types` must also be reproducible, use the same `-s <number>` and a se
 **Minimum validation**:
 
 - [ ] Selected 1 structure tag from `data/tags/structure_tags.csv`
-- [ ] Recorded `mechanism 6 (player 1 + action 2 + ability 1 + context 2) + visual 1 + structure 1` in `README.md`
+- [ ] Recorded `mechanism 5 (player 1 + action 2 + ability 1 + context 1) + visual 1 + structure 1` in `README.md`
 - [ ] Recorded `button_types: <1-5>` in `README.md`
 
 ---
