@@ -75,12 +75,25 @@ Phase 2 has two stages: **Design** (imagine the fun, build the minimum) and **Ve
 - A mini-game should have ONE core mechanic that is deep, not many mechanics that are shallow.
 - **Complexity budget**: A design may have at most 3 mechanics beyond basic movement. If you exceed this, simplify before proceeding. Satisfying guards through the depth of one mechanic is better than satisfying them through the breadth of many.
 
+### Design Principle: Conceptual Coherence
+
+All mechanics in the game must be explainable through concepts that are **conceptually proximate** to the player's perceived identity of the core entity.
+
+1. **Identify the core metaphor**: Determine what the player will perceive the main entity as based on its visual form and behavior.
+2. **Enumerate associated concepts**: List 5-8 concepts that people naturally associate with that metaphor.
+3. **Constrain mechanics to associated concepts**: Every mechanic (attack, defense, scoring, failure, growth) must map to one of these associated concepts. If a mechanic requires a concept outside this set, either replace it with one that fits or reconsider the core metaphor.
+
+**Why**: When mechanics are conceptually distant from the player's mental model, they feel arbitrary and require explanation. When mechanics are conceptually proximate, the player intuits the rules from the metaphor alone without a tutorial.
+
+**Test**: For each mechanic, ask "Would someone who only knows the core metaphor (not the game rules) guess that this mechanic exists?" If no, the mechanic is conceptually distant and should be redesigned.
+
 ### Stage 1 — Design (experience-first)
 
 1. Free-association and deliberate deviation from tags
 2. Describe the core experience as a concrete moment: "The player feels [emotion] when [specific moment happens]" — if you cannot make someone want to play with this one sentence, the concept is not ready
-3. Design ONE core mechanic that creates that moment
-4. Design controls (within `button_types` chosen in Phase 1)
+3. Identify the **core metaphor** and list 5-8 associated concepts (see Conceptual Coherence principle above)
+4. Design ONE core mechanic that creates that moment, using only concepts from step 3
+5. Design controls (within `button_types` chosen in Phase 1)
 5. Design mobile touch layout: map each control action to a touch zone. The virtual gamepad must accommodate all actions within thumb-reachable screen regions. Separate directional movement and action buttons (e.g., movement on one side, actions on the other). Choose screen orientation (portrait `540x960` recommended for single-hand play; landscape if the game requires wide field of view) and document the choice with rationale.
 6. Design game flow states: every game must have three states — **title**, **playing**, and **game_over**. Title screen starts the game via keyboard (SPACE/Z/Enter) or screen tap. Game-over screen shows final score and a retry prompt, activated via R key or retry button tap. Document the transition triggers in the controls section.
 7. Design scoring that naturally rewards the core experience
@@ -89,11 +102,12 @@ Phase 2 has two stages: **Design** (imagine the fun, build the minimum) and **Ve
 
 Test the design against each guard. For any failing guard, return to Stage 1 and redesign the core — do not add new mechanics.
 
-8. Causal chain audit (see Causal Intuition Guard below)
-9. Context-dependent action audit (see Context-Dependent Action Guard below)
-10. Superlinear scoring design (see Superlinear Scoring Guard below)
-11. Engagement design (see Engagement Design below)
-12. Validate via checklist (`guides/mini-game-design-guide.md` §10 and all Guard/Engagement checklists below)
+8. Conceptual coherence audit (see Conceptual Coherence principle above)
+9. Causal chain audit (see Causal Intuition Guard below)
+10. Context-dependent action audit (see Context-Dependent Action Guard below)
+11. Superlinear scoring design (see Superlinear Scoring Guard below)
+12. Engagement design (see Engagement Design below)
+13. Validate via checklist (`guides/mini-game-design-guide.md` §10 and all Guard/Engagement checklists below)
 
 **Output**: `tmp/games/<slug>/README.md` (core mechanics, controls, touch zone layout, screen orientation, game flow states, object specs, novelty rationale, tag log, state-variable table, tradeoff explanation, engagement design)
 

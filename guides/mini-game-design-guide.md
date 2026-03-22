@@ -182,6 +182,12 @@ Output in the following format to `tmp/games/<slug>/README.md`.
 - button_types: <1-5>
 - Unexpected pair check: `<pair_a> + <pair_b>` is not in `data/tags/obvious_pairs.json`
 
+## 0.4 Core Metaphor & Conceptual Coherence
+
+- Core metaphor: <what will the player perceive the main entity as?>
+- Associated concepts: <5-8 concepts naturally linked to this metaphor>
+- Mechanics-to-concept mapping: <for each mechanic, which associated concept it maps to>
+
 ## 0.5 State Model (minimal)
 
 | State Variable | Increase/Decrease Triggers | UI/Feedback Reflection |
@@ -298,6 +304,8 @@ For each action button (beyond movement), the best and worst moments to press it
 
 Confirm the following before completing design.
 
+- [ ] Is the core metaphor identified, and are all mechanics explainable through concepts associated with it? (conceptual coherence)
+- [ ] For each mechanic, would someone who only knows the core metaphor guess that this mechanic exists?
 - [ ] Is the input scheme within the `button_types` limit chosen in Phase 1?
 - [ ] Is the game over condition single and visually obvious?
 - [ ] Is button mashing/idle play not the optimal solution?
