@@ -97,19 +97,52 @@ All mechanics in the game must be explainable through concepts that are **concep
 5. Design mobile touch layout: map each control action to a touch zone. The virtual gamepad must accommodate all actions within thumb-reachable screen regions. Separate directional movement and action buttons (e.g., movement on one side, actions on the other). Choose screen orientation (portrait `540x960` recommended for single-hand play; landscape if the game requires wide field of view) and document the choice with rationale.
 6. Design game flow states: every game must have three states — **title**, **playing**, and **game_over**. Title screen starts the game via keyboard (SPACE/Z/Enter) or screen tap. Game-over screen shows final score and a retry prompt, activated via R key or retry button tap. Document the transition triggers in the controls section.
 7. Design scoring that naturally rewards the core experience
+8. Design success feel (see Success Feel Design below)
+
+### Design Principle: Success Feel Design
+
+Design the feeling of "doing well" as a response from the game world, not as numerical display. The player must be able to sense whether they are succeeding even if the score display is hidden entirely.
+
+For each of the following four axes, describe what changes between a success state and a normal state. Not all axes are mandatory, but for each axis, consciously decide whether to use it or not and record that decision.
+
+#### (1) Player Agency
+
+Does the controlled entity's response change qualitatively in reaction to skilled play? The same action should produce reactions that differ in scale, speed, or texture depending on how well the player is performing. If the controlled entity responds identically regardless of skill level, the player cannot feel their own proficiency through the game.
+
+#### (2) World Response
+
+Does the world outside the controlled entity respond to player success or failure? The surrounding environment — not just the player entity — should reflect the quality of play through visible or audible changes. If the world remains constant regardless of the player's state, the player cannot feel that they are making an impact on the game world.
+
+#### (3) Buildup & Loss
+
+Is there a structure where sustained success accumulates something, and failure causes that accumulation to be lost? The buildup process should create a desire to keep the streak going, and the loss should produce a feeling of "I lost what I had built." If each success and failure is independent with no carry-over effect, no sense of flow or momentum can emerge.
+
+#### (4) Threat Presence
+
+Is the cause of game over perceivable as a concrete presence within the game world? How close the threat is should be expressed through in-world behavior, not through numerical values or gauges. If the threat exists only as an abstract number, the player cannot intuitively feel the urgency.
+
+**Output**: Record design decisions for each axis in `README.md` section `1.9 Success Feel Design`.
+
+### Success Feel Design Checklist
+
+- [ ] Section `1.9 Success Feel Design` exists in `README.md` with all four axes addressed (use/don't-use decision recorded)
+- [ ] For each axis marked as "use," the concrete difference between success state and normal state is described
+- [ ] The player can sense success/failure even with score display hidden
+- [ ] Success Feel design was performed before (or simultaneously with) scoring design
 
 ### Stage 2 — Verify (guards as quality tests)
 
 Test the design against each guard. For any failing guard, return to Stage 1 and redesign the core — do not add new mechanics.
 
-8. Conceptual coherence audit (see Conceptual Coherence principle above)
-9. Causal chain audit (see Causal Intuition Guard below)
-10. Context-dependent action audit (see Context-Dependent Action Guard below)
-11. Superlinear scoring design (see Superlinear Scoring Guard below)
-12. Engagement design (see Engagement Design below)
-13. Validate via checklist (`guides/mini-game-design-guide.md` §10 and all Guard/Engagement checklists below)
+9. Conceptual coherence audit (see Conceptual Coherence principle above)
+10. Causal chain audit (see Causal Intuition Guard below)
+11. Context-dependent action audit (see Context-Dependent Action Guard below)
+12. Superlinear scoring design (see Superlinear Scoring Guard below)
+13. Success feel audit (see Success Feel Design Checklist above)
+14. Engagement design (see Engagement Design below)
+15. Validate via checklist (`guides/mini-game-design-guide.md` §10 and all Guard/Engagement checklists below)
 
-**Output**: `tmp/games/<slug>/README.md` (core mechanics, controls, touch zone layout, screen orientation, game flow states, object specs, novelty rationale, tag log, state-variable table, tradeoff explanation, engagement design)
+**Output**: `tmp/games/<slug>/README.md` (core mechanics, controls, touch zone layout, screen orientation, game flow states, object specs, novelty rationale, tag log, state-variable table, tradeoff explanation, success feel design, engagement design)
 
 **Visible-Causality Guard (required)**:
 
