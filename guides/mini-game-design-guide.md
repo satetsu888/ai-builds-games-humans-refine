@@ -299,6 +299,48 @@ For each action button (beyond movement), the best and worst moments to press it
   - Are there runs where a strategy works well and runs where it fails, based on game state?
   - Would watching two different runs of the same strategy look visually different?
 
+### (10) Success Feel Design
+
+- Principle: The player must be able to sense whether they are succeeding through the game world's behavior, not through numerical displays. Design the feeling of "doing well" along the following four axes. Not all axes are mandatory, but for each axis, consciously decide whether to use it or not and record that decision. Success feel design should be performed before or simultaneously with scoring design — if feel is designed after scoring, it tends to become decoration layered on top of numbers rather than an intrinsic part of how the game communicates.
+
+#### Axis 1: Player Agency
+
+The relationship between input quality and output quality must be continuously perceivable through the controlled entity. This is not about granting rewards or power-ups for good play — it is about the entity's moment-to-moment behavior reflecting how precisely and appropriately the player is controlling it. When a player executes an action with better timing, positioning, or contextual judgment, the difference in outcome should be immediately legible from the entity's behavior alone, before any score is calculated or displayed.
+
+The purpose is to let the player calibrate their own skill through the entity's response. If the entity behaves identically regardless of input quality — if a perfectly timed action and a barely adequate action produce the same visible result — the player has no embodied sense of improvement. They can only know they are getting better by watching a number, which means the number is doing the work that the game itself should be doing.
+
+- Test: Can a player distinguish their own skilled play from unskilled play by observing only the entity's behavior, with all UI hidden?
+
+#### Axis 2: World Response
+
+The game world outside the player entity must communicate game state information that the player can use to make decisions. World response is not about aesthetic reinforcement of the player's performance — it is about the world being readable. A change in the world counts as meaningful response only if it conveys information that would alter a knowledgeable player's next action.
+
+The purpose is to help the player build and continuously refine their mental model of the game's internal systems. Every visible change in the world should either reveal the consequence of an action the player just took, or signal a condition that affects what the player should do next. If the player cannot look at the current world state and form a prediction about what will happen next, the world is not communicating enough. If the world changes in ways that have no bearing on gameplay, the player learns to ignore those changes — which is actively harmful, because it trains the player to stop reading the world.
+
+A world response that merely confirms what the player already knows (the score went up, so the background brightens) adds no information. A world response that reveals something the player could not otherwise perceive (an approaching state change, a spatial relationship becoming dangerous, the cumulative effect of past actions on the environment) is what enables the player to play proactively rather than reactively.
+
+- Test: Does the world's visible state contain information that would change a knowledgeable player's next action? If removing a world response element would not change any decision the player makes, it is decorative, not functional.
+
+#### Axis 3: Buildup & Loss
+
+There must be a structure where sustained successful play accumulates something that the player wants to protect, and failure causes that accumulation to diminish or reset. The key is that the accumulated thing must be perceivable through the game world and must affect how the game plays — it cannot be only a number that grows. As the accumulation grows, the game state itself should feel different: the player should sense that they have built something up and that they stand to lose it.
+
+The purpose is to create escalating stakes through play. When accumulation is purely numerical, the player's relationship to it is abstract — losing 500 points feels the same at any point in the game. When accumulation is tied to the game world's state, losing it means the world visibly regresses, and the player feels the loss as a change in their situation, not just in their score. This creates the emotional structure of "I had built something and I lost it," which drives the desire to try again.
+
+For this axis to function, the accumulation must also create tension: the more the player has built up, the more they have at risk, which should make the player's decisions feel weightier as a session progresses.
+
+- Test: Does the player's relationship to the game change as accumulation grows — do they play more carefully, take different risks, or feel that the stakes have increased? If accumulation has no effect on how the game feels to play, it is bookkeeping, not buildup.
+
+#### Axis 4: Threat Presence
+
+The cause of game over must be perceivable as a concrete force or condition within the game world, not as an abstract countdown or threshold. The player should be able to gauge how close they are to failure by observing the threat's state — its position, behavior, intensity, or spatial relationship to the player — rather than by reading a numerical indicator.
+
+The purpose is to make danger feel spatial and immediate rather than statistical. When threat is expressed only as a number (HP, timer, lives), the player's awareness of danger is mediated through abstraction — they check a gauge periodically rather than feeling pressure from the game world itself. When threat is expressed through the world, danger becomes something the player perceives continuously and intuitively, which produces sustained tension and moment-to-moment engagement.
+
+The threat's perceivability must scale with proximity to failure. As the player approaches game over, the threat's in-world presence should become more salient — not through UI warnings or flashing indicators, but through changes in the threat's own behavior or the spatial conditions of the game world.
+
+- Test: Can a player feel how close they are to game over by observing the game world alone, without any numerical display? Does the feeling of danger intensify continuously as failure approaches, or does it remain constant until a sudden death?
+
 ## 10. Design Quality Checklist
 
 Confirm the following before completing design.
@@ -323,6 +365,12 @@ Confirm the following before completing design.
 - [ ] Can a strategic player score ≥5× more than a player who acts skillfully but without deliberate setup?
 - [ ] Does no fixed hold/release rhythm achieve a competitive score? (periodic resistance)
 - [ ] Does the same strategy produce meaningfully different scores across different seeds? (outcome variance)
+- [ ] Section `1.9 Success Feel Design` exists in `README.md` with all four axes addressed (use/don't-use decision recorded)
+- [ ] For each axis marked as "use," the concrete difference between success state and normal state is described
+- [ ] The player can sense success/failure even with score display hidden
+- [ ] Success Feel design was performed before (or simultaneously with) scoring design
+- [ ] World response elements each convey information that would change a knowledgeable player's next action (not purely decorative)
+- [ ] Threat proximity is perceivable through in-world state, not only through numerical indicators
 
 ## Appendix: SCAMPER Method (Auxiliary Technique)
 

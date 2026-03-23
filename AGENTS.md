@@ -101,34 +101,15 @@ All mechanics in the game must be explainable through concepts that are **concep
 
 ### Design Principle: Success Feel Design
 
-Design the feeling of "doing well" as a response from the game world, not as numerical display. The player must be able to sense whether they are succeeding even if the score display is hidden entirely.
+See `guides/mini-game-design-guide.md` §2.(10) for the full description of the four axes (Player Agency, World Response, Buildup & Loss, Threat Presence).
 
-For each of the following four axes, describe what changes between a success state and a normal state. Not all axes are mandatory, but for each axis, consciously decide whether to use it or not and record that decision.
-
-#### (1) Player Agency
-
-Does the controlled entity's response change qualitatively in reaction to skilled play? The same action should produce reactions that differ in scale, speed, or texture depending on how well the player is performing. If the controlled entity responds identically regardless of skill level, the player cannot feel their own proficiency through the game.
-
-#### (2) World Response
-
-Does the world outside the controlled entity respond to player success or failure? The surrounding environment — not just the player entity — should reflect the quality of play through visible or audible changes. If the world remains constant regardless of the player's state, the player cannot feel that they are making an impact on the game world.
-
-#### (3) Buildup & Loss
-
-Is there a structure where sustained success accumulates something, and failure causes that accumulation to be lost? The buildup process should create a desire to keep the streak going, and the loss should produce a feeling of "I lost what I had built." If each success and failure is independent with no carry-over effect, no sense of flow or momentum can emerge.
-
-#### (4) Threat Presence
-
-Is the cause of game over perceivable as a concrete presence within the game world? How close the threat is should be expressed through in-world behavior, not through numerical values or gauges. If the threat exists only as an abstract number, the player cannot intuitively feel the urgency.
+For each axis, consciously decide whether to use it or not and record the decision. For each axis marked as "use," describe the concrete difference between success state and normal state.
 
 **Output**: Record design decisions for each axis in `README.md` section `1.9 Success Feel Design`.
 
 ### Success Feel Design Checklist
 
-- [ ] Section `1.9 Success Feel Design` exists in `README.md` with all four axes addressed (use/don't-use decision recorded)
-- [ ] For each axis marked as "use," the concrete difference between success state and normal state is described
-- [ ] The player can sense success/failure even with score display hidden
-- [ ] Success Feel design was performed before (or simultaneously with) scoring design
+See `guides/mini-game-design-guide.md` §10 for the full checklist.
 
 ### Stage 2 — Verify (guards as quality tests)
 
