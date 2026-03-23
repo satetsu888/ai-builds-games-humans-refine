@@ -52,9 +52,10 @@ Integrate "principles (what to do)" and "evaluation (confirmation items)" to cla
   - **Beneficial context**: Define when the action produces the best outcome (e.g., "attack when enemies are clustered," "jump at the edge of a platform," "fire when the target is aligned").
   - **Costly context**: Define when the action produces a negative outcome or opportunity cost (e.g., "attack on miss creates a vulnerability window," "jumping at the wrong time lands you in danger," "firing depletes limited ammo needed later").
   - The cost does not need to be symmetric with the benefit — a small cost that occasionally matters is enough to create meaningful timing decisions.
-- Test: For each action button, can you concretely describe both "the best moment to press it" and "the worst moment to press it"?
+  - **Inevitable actions**: Some actions must eventually be performed to progress. For these, context-dependence comes from when and where the action is performed rather than whether to perform it. The game state determines whether a given moment is favorable or unfavorable. The action is never "optional," but the quality of its outcome depends entirely on reading the current situation.
+- Test: For each action button, can you concretely describe both "the best moment to press it" and "the worst moment to press it"? For inevitable actions, the test is whether pressing as fast as possible produces worse results than pressing at chosen moments.
 - Evaluation:
-  - Does each action button have at least one situation where NOT pressing it is the better choice?
+  - Does each action button have at least one situation where NOT pressing it (or waiting) is the better choice?
   - Would a policy of "press this button as often as possible" perform worse than a policy of "press this button at the right moments"?
   - Can the player learn to read the game state to judge when to act?
 

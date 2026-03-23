@@ -161,6 +161,8 @@ Record causal sentences in `README.md` section `1.6 Causal Chain Audit`.
 
 Every action button (beyond basic movement) must have situations where pressing it is the right choice AND situations where pressing it is the wrong choice. If an action is always beneficial, it becomes a reflex (button mashing) rather than a decision.
 
+Note: Some actions are inevitable — the player must eventually perform them to progress. In such designs, context-dependence comes from **when and where** the action is performed rather than whether to perform it at all. The guard is satisfied if the game state makes certain moments clearly better or worse than others, requiring the player to read the situation before acting. The key test remains: does pressing as fast as possible perform worse than pressing at chosen moments?
+
 For each action button, document in `README.md` section `1.7 Context-Dependent Action Audit`:
 
 | Action | Best Moment | Worst Moment | Cost of Mistiming |
@@ -220,6 +222,7 @@ Does the game create moments where the player forms an expectation and then has 
 Can the player feel "I'm getting better at this"?
 
 - Define what separates a beginner, intermediate, and expert player in concrete behavioral terms (not score numbers).
+- In games with randomness (random spawns, physics unpredictability), mastery may manifest as **consistency and risk management** rather than deterministic execution. A skilled player in a luck-influenced game reads the current situation and adapts, rather than executing a memorized sequence. Define mastery levels in terms of how the player relates to uncertainty.
 - Example: "Beginner dodges reactively. Intermediate anticipates patterns and positions early. Expert baits hazards into favorable formations before countering."
 
 #### (3) Meaningful Choices
@@ -234,7 +237,8 @@ Are there moments where the player must choose between meaningfully different op
 Does the game alternate between tension and relief?
 
 - Describe the expected tension curve over a 30-second window.
-- Identify what creates the "peaks" (challenge intensification, approaching deadline, accumulating instability, resource depletion) and "valleys" (safe window, reward collection).
+- Identify what creates the "peaks" (challenge intensification, approaching deadline, accumulating instability, resource depletion, spatial pressure) and "valleys" (safe window, reward collection, state recovery after successful action).
+- Tension does not require an external timer or deadline. It can arise internally from the game state itself — accumulating pressure that the player must actively manage and relieve through skilled play. Document the source of tension (external time pressure, internal state pressure, or both).
 - If the game is constant intensity, document why that works for the core experience.
 
 #### (5) Replay Motivation
