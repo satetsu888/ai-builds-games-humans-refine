@@ -15,6 +15,7 @@ Entry point for AI agents to automatically design, implement, and improve mini-g
 - Scoring must be tied only to in-game event causality. Direct scoring for raw input facts is prohibited.
 - Game-over conditions must be tied to in-world consequences/state collapse. Do not directly punish non-action itself.
 - Test-agent-specific branching (hidden behavior that is only advantageous/disadvantageous during tests) is prohibited.
+- Scoring growth is not fun. Do not describe score scaling (e.g., N² points, combo multipliers) as a source of enjoyment. Fun must come from the play experience itself — the decisions, discoveries, tensions, and satisfactions that occur during gameplay. Scoring systems should be documented as evaluation mechanisms only, never as justifications for why the game is enjoyable.
 
 ## Instruction: When You Are Told “Make a Game”
 
