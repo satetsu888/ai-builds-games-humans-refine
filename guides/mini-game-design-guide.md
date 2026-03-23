@@ -180,7 +180,6 @@ Output in the following format to `tmp/games/<slug>/README.md`.
 - Visual (2): #v_tag1, #v_tag2
 - Structure (1): #s_tag1
 - button_types: <1-5>
-- Unexpected pair check: `<pair_a> + <pair_b>` is not in `data/tags/obvious_pairs.json`
 
 ## 0.4 Core Metaphor & Conceptual Coherence
 
